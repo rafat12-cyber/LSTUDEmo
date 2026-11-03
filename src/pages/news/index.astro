@@ -1,0 +1,24 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { url, formatDate } from '../../lib/url';
+const items = (await getCollection('news')).sort((a, b) => +b.data.date - +a.data.date);
+---
+<Base title="News and Events">
+  <PageHeader title="News and Events" crumbs={[{ label: 'News and Events' }]} />
+  <section class="section">
+    <div class="container">
+      <div class="cards">
+        {items.map((n) => (
+          <div class="card">
+            <span class="tag">{n.data.type} · {formatDate(n.data.date)}</span>
+            <h3 style="margin-top:6px">{n.data.title}</h3>
+            <p>{n.data.summary}</p>
+            <a class="more" href={url(`/news/${n.id}`)}>Read more →</a>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>

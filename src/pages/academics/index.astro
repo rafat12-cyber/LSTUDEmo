@@ -1,0 +1,46 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { faculties } from '../../lib/site';
+import { url } from '../../lib/url';
+const departments = (await getCollection('departments')).sort((a, b) => a.data.order - b.data.order);
+const calendar = [
+  ['Classes begin (Spring semester)', 'January 2027'],
+  ['Mid-semester examinations', 'March 2027'],
+  ['Spring semester final examinations', 'June 2027'],
+  ['Classes begin (Autumn semester)', 'July 2027'],
+  ['Autumn semester final examinations', 'December 2027'],
+];
+---
+<Base title="Academics">
+  <PageHeader title="Faculties and Departments" crumbs={[{ label: 'Academics' }]} />
+  {faculties.map((f, i) => (
+    <section class={`section ${i % 2 ? 'section-alt' : ''}`}>
+      <div class="container">
+        <div class="section-title"><h2>{f.name}</h2><p>{f.blurb}</p><div class="rule"></div></div>
+        <div class="cards">
+          {departments.filter((d) => d.data.faculty === f.name).map((d) => (
+            <div class="card">
+              <div class="card-icon">{d.data.short}</div>
+              <h3>Department of {d.data.name}</h3>
+              <p>{d.data.programs.join(' · ')}</p>
+              <a class="more" href={url(`/academics/${d.id}`)}>Visit Department →</a>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  ))}
+  <section class="section section-alt" id="calendar">
+    <div class="container">
+      <div class="section-title"><h2>Academic Calendar</h2><p>Tentative dates, subject to change by the Academic Council</p><div class="rule"></div></div>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>Activity</th><th>Time</th></tr></thead>
+          <tbody>{calendar.map(([a, t]) => <tr><td>{a}</td><td>{t}</td></tr>)}</tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</Base>

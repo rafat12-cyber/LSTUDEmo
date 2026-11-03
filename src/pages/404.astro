@@ -1,0 +1,12 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { url } from '../lib/url';
+---
+<Base title="Page not found">
+  <PageHeader title="Page Not Found" crumbs={[{ label: '404' }]} />
+  <section class="section"><div class="container content" style="text-align:center">
+    <p>Sorry, the page you are looking for does not exist or has been moved.</p>
+    <a class="btn btn-navy" href={url('/')}>Go to Home Page</a>
+  </div></section>
+</Base>

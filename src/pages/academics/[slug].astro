@@ -1,0 +1,43 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Sidebar from '../../components/Sidebar.astro';
+
+export async function getStaticPaths() {
+  const departments = await getCollection('departments');
+  return departments.map((d) => ({ params: { slug: d.id }, props: { d } }));
+}
+const { d } = Astro.props;
+const { Content } = await render(d);
+const name = `Department of ${d.data.name}`;
+---
+<Base title={name} description={`${name}, Lakshmipur Science and Technology University.`}>
+  <PageHeader title={name} crumbs={[{ label: 'Academics', href: '/academics' }, { label: d.data.short }]} />
+  <section class="section">
+    <div class="container layout">
+      <article class="content">
+        <p class="tag">{d.data.faculty}</p>
+        <h2>About the Department</h2>
+        <Content />
+        <h2>Programs Offered</h2>
+        <div class="table-wrap">
+          <table class="data">
+            <thead><tr><th>Program</th><th>Duration</th></tr></thead>
+            <tbody>
+              {d.data.programs.map((p) => <tr><td>{p}</td><td>{/^(M|MBA)/.test(p) ? '1 to 2 years' : '4 years (8 semesters)'}</td></tr>)}
+            </tbody>
+          </table>
+        </div>
+        <p><strong>Undergraduate seats:</strong> {d.data.seats}</p>
+        <h2>Faculty Members</h2>
+        <div class="people">
+          {['Chairman', 'Associate Professor', 'Assistant Professor', 'Lecturer'].map((r) => (
+            <div class="person"><div class="avatar" aria-hidden="true">👤</div><strong>Name to be added</strong><span>{r}</span></div>
+          ))}
+        </div>
+      </article>
+      <Sidebar />
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,66 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Sidebar from '../components/Sidebar.astro';
+import { url } from '../lib/url';
+const dates = [
+  ['Online application starts', '10 November 2026'],
+  ['Last date of application', '30 November 2026'],
+  ['Admit card download', 'From 5 December 2026'],
+  ['Admission test', '20 December 2026'],
+  ['Result publication', '5 January 2027'],
+  ['Admission and enrolment', '10 to 20 January 2027'],
+];
+const units = [
+  ['A Unit', 'Engineering and Science', 'Science group: GPA 4.00 in both SSC and HSC, with Physics, Chemistry and Mathematics'],
+  ['B Unit', 'Agriculture and Marine Science', 'Science group: GPA 3.50 in both SSC and HSC, with Biology'],
+  ['C Unit', 'Business Studies', 'Any group: GPA 3.50 in both SSC and HSC'],
+];
+---
+<Base title="Admission">
+  <PageHeader title="Admission 2026-27" crumbs={[{ label: 'Admission' }]} />
+  <section class="section">
+    <div class="container layout">
+      <article class="content">
+        <div class="note">Online applications for the 2026-27 undergraduate session open on <strong>10 November 2026</strong>. Read the <a href={url('/notices/admission-circular-2026-27')}>admission circular</a> carefully before applying.</div>
+
+        <h2>Important Dates</h2>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Activity</th><th>Date</th></tr></thead>
+          <tbody>{dates.map(([a, d]) => <tr><td>{a}</td><td>{d}</td></tr>)}</tbody>
+        </table></div>
+
+        <h2>Units and Eligibility</h2>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Unit</th><th>Faculty</th><th>Minimum requirement</th></tr></thead>
+          <tbody>{units.map(([u, f, r]) => <tr><td><strong>{u}</strong></td><td>{f}</td><td>{r}</td></tr>)}</tbody>
+        </table></div>
+
+        <h2>How to Apply</h2>
+        <ol>
+          <li>Visit the admission portal and fill in the online application form with your SSC and HSC information.</li>
+          <li>Pay the application fee of <strong>Tk 1,000</strong> through mobile banking.</li>
+          <li>Upload a recent passport-size photograph.</li>
+          <li>Download your admit card after 5 December 2026.</li>
+          <li>Sit for the admission test at the assigned centre.</li>
+        </ol>
+
+        <h2>Fees (first year, approximate)</h2>
+        <div class="table-wrap"><table class="data">
+          <thead><tr><th>Item</th><th>Amount</th></tr></thead>
+          <tbody>
+            <tr><td>Admission fee</td><td>Tk 8,000</td></tr>
+            <tr><td>Semester tuition fee</td><td>Tk 3,000 per semester</td></tr>
+            <tr><td>Hall seat rent</td><td>Tk 500 per month</td></tr>
+          </tbody>
+        </table></div>
+
+        <h2>Frequently Asked Questions</h2>
+        <p><strong>Can students from any district apply?</strong><br />Yes. Admission is open to eligible students from all over Bangladesh.</p>
+        <p><strong>Is there a quota for freedom fighters' wards and tribal students?</strong><br />Yes, as per government rules. Details are in the admission circular.</p>
+        <p><strong>Who do I contact with questions?</strong><br />Contact the Admission Office through the <a href={url('/contact')}>Contact page</a>.</p>
+      </article>
+      <Sidebar />
+    </div>
+  </section>
+</Base>

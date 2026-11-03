@@ -1,0 +1,43 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { url, formatDate } from '../../lib/url';
+const notices = (await getCollection('notices')).sort((a, b) => +b.data.date - +a.data.date);
+const cats = ['All', 'Admission', 'Exam', 'General', 'Tender', 'Recruitment'];
+---
+<Base title="Notice Board">
+  <PageHeader title="Notice Board" crumbs={[{ label: 'Notices' }]} />
+  <section class="section">
+    <div class="container">
+      <div class="content">
+        <div class="filters" role="group" aria-label="Filter notices">
+          {cats.map((c, i) => <button class={i === 0 ? 'active' : ''} data-cat={c}>{c}</button>)}
+        </div>
+        <div class="table-wrap">
+          <table class="data" id="notices">
+            <thead><tr><th style="width:60px">No.</th><th>Title</th><th style="width:130px">Category</th><th style="width:130px">Published</th></tr></thead>
+            <tbody>
+              {notices.map((n, i) => (
+                <tr data-cat={n.data.category}>
+                  <td>{i + 1}</td>
+                  <td><a href={url(`/notices/${n.id}`)}>{n.data.title}</a></td>
+                  <td><span class="tag">{n.data.category}</span></td>
+                  <td>{formatDate(n.data.date)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+  <script>
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.filters button');
+    const rows = document.querySelectorAll<HTMLTableRowElement>('#notices tbody tr');
+    buttons.forEach((b) => b.addEventListener('click', () => {
+      buttons.forEach((x) => x.classList.toggle('active', x === b));
+      rows.forEach((r) => { r.hidden = b.dataset.cat !== 'All' && r.dataset.cat !== b.dataset.cat; });
+    }));
+  </script>
+</Base>

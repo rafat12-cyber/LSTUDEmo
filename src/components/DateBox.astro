@@ -1,0 +1,8 @@
+---
+interface Props { date: Date }
+const { date } = Astro.props;
+---
+<div class="datebox" aria-hidden="true">
+  <b>{String(date.getDate()).padStart(2, '0')}</b>
+  <small>{date.toLocaleDateString('en-GB', { month: 'short' })}</small>
+</div>

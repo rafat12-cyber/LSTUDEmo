@@ -1,0 +1,160 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import DateBox from '../components/DateBox.astro';
+import { faculties } from '../lib/site';
+import { url, formatDate } from '../lib/url';
+
+const notices = (await getCollection('notices')).sort((a, b) => +b.data.date - +a.data.date);
+const all = (await getCollection('news')).sort((a, b) => +b.data.date - +a.data.date);
+const news = all.filter((n) => n.data.type === 'News').slice(0, 4);
+const events = all.filter((n) => n.data.type === 'Event').sort((a, b) => +a.data.date - +b.data.date).slice(0, 4);
+const departments = await getCollection('departments');
+
+const slides = [
+  { kicker: 'Welcome to LSTU', title: 'A Centre of Science and Technology on the Banks of the Meghna', text: 'Building knowledge, character and skills for a developed Bangladesh.', cta: { label: 'Discover LSTU', href: '/about' } },
+  { kicker: 'Admission 2026-27', title: 'Undergraduate Admission is Now Open', text: 'Apply online for programs in engineering, science, agriculture and business.', cta: { label: 'Apply Now', href: '/admission' } },
+  { kicker: 'Research', title: 'Science for the Coast and its People', text: 'Our researchers work on fisheries, salt-tolerant crops and renewable energy for the coastal region.', cta: { label: 'Read the News', href: '/news' } },
+];
+
+const quick = [
+  { icon: '🎓', label: 'Admission', href: '/admission' },
+  { icon: '📅', label: 'Academic Calendar', href: '/academics#calendar' },
+  { icon: '📝', label: 'Exam Notices', href: '/notices' },
+  { icon: '🏛', label: 'Departments', href: '/academics' },
+  { icon: '📚', label: 'Library', href: '/about#facilities' },
+  { icon: '✉', label: 'Contact', href: '/contact' },
+];
+---
+<Base>
+  <div class="ticker" aria-label="Latest notices">
+    <div class="ticker-label">Latest</div>
+    <div class="ticker-track">
+      <div class="ticker-items">
+        {notices.slice(0, 5).map((n) => <a href={url(`/notices/${n.id}`)}>{n.data.title}</a>)}
+      </div>
+    </div>
+  </div>
+
+  <section class="hero" aria-label="Highlights">
+    {slides.map((s, i) => (
+      <div class={`slide slide-${i + 1} ${i === 0 ? 'active' : ''}`} aria-hidden={i !== 0 ? 'true' : 'false'}>
+        <div class="container">
+          <div class="slide-content">
+            <div class="slide-kicker">{s.kicker}</div>
+            <h2>{s.title}</h2>
+            <p>{s.text}</p>
+            <a class="btn btn-gold" href={url(s.cta.href)}>{s.cta.label}</a>
+            <a class="btn btn-outline" href={url('/contact')}>Visit Campus</a>
+          </div>
+        </div>
+      </div>
+    ))}
+    <img class="slide-crest" src={url('/images/logo.png')} alt="" width="300" height="300" />
+    <div class="dots">
+      {slides.map((_, i) => <button class={i === 0 ? 'active' : ''} aria-label={`Show slide ${i + 1}`} data-i={i}></button>)}
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container welcome">
+      <figure class="portrait">
+        <div class="portrait-img" aria-hidden="true">👤</div>
+        <figcaption><strong>Vice-Chancellor</strong>Lakshmipur Science and Technology University</figcaption>
+      </figure>
+      <div>
+        <h2 class="boxed">Message from the Vice-Chancellor</h2>
+        <blockquote>
+          <p>It is my great pleasure to welcome you to Lakshmipur Science and Technology University. Standing beside the mighty Meghna, our university was founded to bring quality higher education in science, technology, agriculture and business to the people of the coastal region and the whole nation.</p>
+          <p>We believe that education must build both skill and character. Our teachers, laboratories and libraries are here to help every student discover their talent and serve the country with honesty and dedication.</p>
+        </blockquote>
+        <p style="margin-top:16px"><a class="btn btn-navy" href={url('/about#vc')}>Read Full Message</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-title"><h2>Notices, News and Events</h2><p>Stay informed about life at LSTU</p><div class="rule"></div></div>
+      <div class="boards">
+        <div class="board">
+          <div class="board-head">Notice Board</div>
+          <ul>
+            {notices.slice(0, 5).map((n) => (
+              <li><DateBox date={n.data.date} /><div><span class="tag">{n.data.category}</span><br /><a href={url(`/notices/${n.id}`)}>{n.data.title}</a></div></li>
+            ))}
+          </ul>
+          <div class="board-foot"><a href={url('/notices')}>All Notices →</a></div>
+        </div>
+        <div class="board">
+          <div class="board-head">Latest News</div>
+          <ul>
+            {news.map((n) => (
+              <li><DateBox date={n.data.date} /><div><a href={url(`/news/${n.id}`)}>{n.data.title}</a><br /><small>{n.data.summary}</small></div></li>
+            ))}
+          </ul>
+          <div class="board-foot"><a href={url('/news')}>All News →</a></div>
+        </div>
+        <div class="board">
+          <div class="board-head">Upcoming Events</div>
+          <ul>
+            {events.map((n) => (
+              <li><DateBox date={n.data.date} /><div><a href={url(`/news/${n.id}`)}>{n.data.title}</a><br /><small>{formatDate(n.data.date)}</small></div></li>
+            ))}
+          </ul>
+          <div class="board-foot"><a href={url('/news')}>All Events →</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-title"><h2>Our Faculties</h2><p>Four faculties, {departments.length} departments, one community of learning</p><div class="rule"></div></div>
+      <div class="cards">
+        {faculties.map((f) => (
+          <div class="card">
+            <div class="card-icon" aria-hidden="true">{f.icon}</div>
+            <h3>{f.name}</h3>
+            <p>{f.blurb}</p>
+            <p><small>{departments.filter((d) => d.data.faculty === f.name).map((d) => d.data.short).join(' · ')}</small></p>
+            <a class="more" href={url('/academics')}>View Departments →</a>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="stats">
+    <div class="container stats-grid">
+      <div class="stat"><b>2,400+</b><span>Students</span></div>
+      <div class="stat"><b>120+</b><span>Teachers</span></div>
+      <div class="stat"><b>{departments.length}</b><span>Departments</span></div>
+      <div class="stat"><b>4</b><span>Faculties</span></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-title"><h2>Quick Links</h2><div class="rule"></div></div>
+      <div class="quicklinks">
+        {quick.map((q) => <a href={url(q.href)}><span aria-hidden="true">{q.icon}</span>{q.label}</a>)}
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const slides = document.querySelectorAll<HTMLElement>('.slide');
+    const dots = document.querySelectorAll<HTMLButtonElement>('.dots button');
+    let current = 0;
+    const show = (i: number) => {
+      slides.forEach((s, j) => { s.classList.toggle('active', j === i); s.setAttribute('aria-hidden', String(j !== i)); });
+      dots.forEach((d, j) => d.classList.toggle('active', j === i));
+      current = i;
+    };
+    dots.forEach((d) => d.addEventListener('click', () => show(Number(d.dataset.i))));
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setInterval(() => show((current + 1) % slides.length), 6000);
+    }
+  </script>
+</Base>

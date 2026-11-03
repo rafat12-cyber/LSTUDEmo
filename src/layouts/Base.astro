@@ -1,0 +1,132 @@
+---
+import '../styles/global.css';
+import { site, nav } from '../lib/site';
+import { url } from '../lib/url';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const { title, description = `Official website of ${site.name} (${site.short}), Lakshmipur, Bangladesh.` } = Astro.props;
+const fullTitle = title ? `${title} | ${site.short}` : `${site.name} (${site.short})`;
+const path = Astro.url.pathname.replace(import.meta.env.BASE_URL.replace(/\/$/, ''), '') || '/';
+const isActive = (href: string) => (href === '/' ? path === '/' || path === '' : path.startsWith(href.split('#')[0]));
+const year = new Date().getFullYear();
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{fullTitle}</title>
+    <link rel="icon" type="image/png" href={url('/favicon.png')} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600&family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <div class="topbar">
+      <div class="container topbar-inner">
+        <div class="topbar-contact">
+          <span>☎ {site.phone}</span>
+          <span>✉ <a href={`mailto:${site.email}`}>{site.email}</a></span>
+        </div>
+        <div class="topbar-links">
+          <a href={url('/notices')}>Notices</a>
+          <a href={url('/admission')}>Admission</a>
+          <a href={url('/contact')}>Contact</a>
+          <span class="lang" title="Bangla version coming soon">বাংলা</span>
+        </div>
+      </div>
+    </div>
+
+    <header class="masthead">
+      <div class="container masthead-inner">
+        <a href={url('/')} class="brand" aria-label={`${site.name} home`}>
+          <img src={url('/images/logo.png')} alt={`${site.short} crest`} width="96" height="96" />
+          <div class="brand-text">
+            <span class="brand-en">{site.name}</span>
+            <span class="brand-bn" lang="bn">{site.nameBn}</span>
+            <span class="brand-motto">{site.motto}</span>
+          </div>
+        </a>
+        <a class="btn btn-gold masthead-cta" href={url('/admission')}>Apply for Admission</a>
+      </div>
+    </header>
+
+    <nav class="mainnav" aria-label="Main">
+      <div class="container mainnav-inner">
+        <button class="menu-toggle" aria-expanded="false" aria-controls="menu">☰ Menu</button>
+        <ul id="menu" class="menu">
+          {nav.map((item) => (
+            <li class={item.children ? 'has-sub' : ''}>
+              <a href={url(item.href)} class={isActive(item.href) ? 'active' : ''}>
+                {item.label}{item.children && <span class="caret" aria-hidden="true"> ▾</span>}
+              </a>
+              {item.children && (
+                <ul class="submenu">
+                  {item.children.map((c) => <li><a href={url(c.href)}>{c.label}</a></li>)}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </nav>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-grid">
+        <div>
+          <img src={url('/images/logo.png')} alt="" width="72" height="72" class="footer-logo" />
+          <p class="footer-name">{site.name}</p>
+          <p lang="bn" class="footer-bn">{site.nameBn}</p>
+        </div>
+        <div>
+          <h3>Contact</h3>
+          <p>{site.address}</p>
+          <p>Phone: {site.phone}</p>
+          <p>Email: <a href={`mailto:${site.email}`}>{site.email}</a></p>
+        </div>
+        <div>
+          <h3>Quick Links</h3>
+          <ul>
+            <li><a href={url('/about')}>About LSTU</a></li>
+            <li><a href={url('/academics')}>Departments</a></li>
+            <li><a href={url('/admission')}>Admission</a></li>
+            <li><a href={url('/notices')}>Notice Board</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Important Links</h3>
+          <ul>
+            <li><a href="https://www.ugc.gov.bd" rel="noopener">University Grants Commission</a></li>
+            <li><a href="https://moedu.gov.bd" rel="noopener">Ministry of Education</a></li>
+            <li><a href="https://bangladesh.gov.bd" rel="noopener">Bangladesh National Portal</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="container">© {year} {site.name}. All rights reserved. · Demo website</div>
+      </div>
+    </footer>
+
+    <script>
+      const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+      const menu = document.getElementById('menu');
+      toggle?.addEventListener('click', () => {
+        const open = menu?.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', String(!!open));
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { site } from '../lib/site';
+const offices = [
+  ['Office of the Registrar', site.registrarEmail],
+  ['Admission Office', 'admission@lstu.edu.bd'],
+  ['Office of the Controller of Examinations', 'exam@lstu.edu.bd'],
+];
+---
+<Base title="Contact">
+  <PageHeader title="Contact Us" crumbs={[{ label: 'Contact' }]} />
+  <section class="section">
+    <div class="container layout">
+      <div class="content">
+        <h2>Send us a Message</h2>
+        <p class="note">This is a demo form. Messages are not sent yet.</p>
+        <form class="form-grid" onsubmit="event.preventDefault(); this.querySelector('.sent').hidden = false; this.reset();">
+          <div><label for="name">Full name</label><input id="name" name="name" required /></div>
+          <div><label for="email">Email</label><input id="email" name="email" type="email" required /></div>
+          <div class="full"><label for="subject">Subject</label><input id="subject" name="subject" /></div>
+          <div class="full"><label for="message">Message</label><textarea id="message" name="message" rows="6" required></textarea></div>
+          <div class="full"><button class="btn btn-navy" type="submit">Send Message</button> <span class="sent" hidden>Thank you. Your message has been recorded.</span></div>
+        </form>
+        <h2 style="margin-top:1.5em">Find Us</h2>
+        <iframe class="map" title="Map of Lakshmipur" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=90.78%2C22.91%2C90.88%2C22.98&layer=mapnik&marker=22.9447%2C90.8282"></iframe>
+      </div>
+      <aside class="sidebar">
+        <div class="widget"><h3>Address</h3><p>{site.name}<br />{site.address}</p></div>
+        <div class="widget"><h3>Phone and Email</h3><p>{site.phone}<br /><a href={`mailto:${site.email}`}>{site.email}</a></p></div>
+        <div class="widget"><h3>Offices</h3><p>{offices.map(([o, e]) => <>{o}<br /><a href={`mailto:${e}`}>{e}</a><br /><br /></>)}</p></div>
+        <div class="widget"><h3>Office Hours</h3><p>Sunday to Thursday<br />9:00 AM to 5:00 PM</p></div>
+      </aside>
+    </div>
+  </section>
+</Base>

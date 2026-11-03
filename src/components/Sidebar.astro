@@ -1,0 +1,25 @@
+---
+import { getCollection } from 'astro:content';
+import { url } from '../lib/url';
+import { site } from '../lib/site';
+const notices = (await getCollection('notices')).sort((a, b) => +b.data.date - +a.data.date).slice(0, 5);
+---
+<aside class="sidebar">
+  <div class="widget">
+    <h3>Latest Notices</h3>
+    <ul>{notices.map((n) => <li><a href={url(`/notices/${n.id}`)}>{n.data.title}</a></li>)}</ul>
+  </div>
+  <div class="widget">
+    <h3>Quick Links</h3>
+    <ul>
+      <li><a href={url('/admission')}>Admission 2026-27</a></li>
+      <li><a href={url('/academics')}>Departments</a></li>
+      <li><a href={url('/academics#calendar')}>Academic Calendar</a></li>
+      <li><a href={url('/contact')}>Contact Us</a></li>
+    </ul>
+  </div>
+  <div class="widget">
+    <h3>Contact</h3>
+    <p>{site.address}<br />{site.phone}<br /><a href={`mailto:${site.email}`}>{site.email}</a></p>
+  </div>
+</aside>

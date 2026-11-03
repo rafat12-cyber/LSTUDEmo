@@ -1,0 +1,27 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import { url, formatDate } from '../../lib/url';
+export async function getStaticPaths() {
+  return (await getCollection('news')).map((n) => ({ params: { slug: n.id }, props: { n } }));
+}
+const { n } = Astro.props;
+const { Content } = await render(n);
+---
+<Base title={n.data.title} description={n.data.summary}>
+  <PageHeader title={n.data.type === 'Event' ? 'Event' : 'News'} crumbs={[{ label: 'News and Events', href: '/news' }, { label: n.data.type }]} />
+  <section class="section">
+    <div class="container layout">
+      <article class="content">
+        <span class="tag">{n.data.type} · {formatDate(n.data.date)}</span>
+        <h2>{n.data.title}</h2>
+        <p><strong>{n.data.summary}</strong></p>
+        <Content />
+        <p><a href={url('/news')}>← Back to News and Events</a></p>
+      </article>
+      <Sidebar />
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,55 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Sidebar from '../components/Sidebar.astro';
+import { site } from '../lib/site';
+const admins = [
+  { role: 'Vice-Chancellor', icon: '👤' },
+  { role: 'Pro-Vice-Chancellor', icon: '👤' },
+  { role: 'Treasurer', icon: '👤' },
+  { role: 'Registrar', icon: '👤' },
+];
+---
+<Base title="About LSTU">
+  <PageHeader title="About LSTU" crumbs={[{ label: 'About' }]} />
+  <section class="section">
+    <div class="container layout">
+      <article class="content">
+        <h2 id="history">History</h2>
+        <p>{site.name} (<span lang="bn">{site.nameBn}</span>) is a public university in Lakshmipur district, in the coastal south-east of Bangladesh. It was established to extend quality higher education in science and technology to the Meghna coastal region, where students once had to travel far from home to study.</p>
+        <p>From a small temporary campus, the university is growing into a full residential campus with academic buildings, laboratories, a central library, halls of residence, and playgrounds.</p>
+
+        <h2 id="mission">Vision and Mission</h2>
+        <p><strong>Vision:</strong> To become a centre of excellence in science and technology education and research that serves the coastal region and the nation.</p>
+        <p><strong>Mission:</strong></p>
+        <ul>
+          <li>Provide high-quality, affordable higher education in science, engineering, agriculture and business.</li>
+          <li>Carry out research that answers the real needs of the coastal people: fisheries, agriculture, climate and energy.</li>
+          <li>Develop skilled, ethical and patriotic graduates inspired by the spirit of the Liberation War.</li>
+          <li>Build partnerships with industry, government and universities at home and abroad.</li>
+        </ul>
+
+        <h2 id="vc">Message from the Vice-Chancellor</h2>
+        <p>It is my great pleasure to welcome you to Lakshmipur Science and Technology University. Standing beside the mighty Meghna, our university was founded to bring quality higher education to the people of the coastal region and the whole nation.</p>
+        <p>We believe that education must build both skill and character. Our dedicated teachers, growing laboratories and libraries are here to help every student discover their talent. I invite students, parents and well-wishers to join us on this journey to make LSTU a university the nation can be proud of.</p>
+        <p><em>Vice-Chancellor, {site.name}</em></p>
+
+        <h2 id="administration">Administration</h2>
+        <div class="people">
+          {admins.map((a) => (
+            <div class="person"><div class="avatar" aria-hidden="true">{a.icon}</div><strong>Name to be added</strong><span>{a.role}</span></div>
+          ))}
+        </div>
+
+        <h2 id="facilities" style="margin-top:1.2em">Campus and Facilities</h2>
+        <ul>
+          <li><strong>Central Library</strong> with books, journals and digital resources.</li>
+          <li><strong>Laboratories</strong> for computing, physics, chemistry, soil science and fisheries.</li>
+          <li><strong>Halls of Residence</strong> for male and female students.</li>
+          <li><strong>Medical Centre</strong>, transport service, cafeteria and central mosque.</li>
+        </ul>
+      </article>
+      <Sidebar />
+    </div>
+  </section>
+</Base>
