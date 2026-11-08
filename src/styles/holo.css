@@ -1,0 +1,179 @@
+/* ---------- Holographic 3D crest (hero) ---------- */
+.holo {
+  --cyan: #8ff0ff;
+  --holo-gold: #f5d27a;
+  --violet: #b48cff;
+  --rx: -8deg;
+  --ry: -18deg;
+  position: relative; width: 340px; display: flex; flex-direction: column; align-items: center;
+  outline: none; touch-action: pan-y; user-select: none; -webkit-user-select: none;
+  cursor: grab;
+}
+.holo.dragging { cursor: grabbing; }
+.holo:focus-visible .holo-stage { outline: 2px dashed var(--cyan); outline-offset: 8px; border-radius: 12px; }
+
+.holo-stage { position: relative; width: 300px; height: 380px; perspective: 1000px; }
+.holo-rig {
+  position: absolute; left: 0; top: 0; width: 300px; height: 340px; transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+}
+.holo-layer {
+  position: absolute; inset: 0; transform: translateZ(calc(var(--z) * 1px)); transform-style: preserve-3d;
+  pointer-events: none;
+}
+.holo-glow {
+  background: radial-gradient(closest-side, rgba(143, 240, 255, 0.28), rgba(143, 240, 255, 0.06) 60%, transparent);
+  filter: blur(6px);
+}
+
+/* Shield frame */
+.holo-shield svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 0 6px rgba(143, 240, 255, 0.7)); }
+.shield-body { fill: url(#holo-fill); stroke: url(#holo-edge); stroke-width: 3; }
+.shield-inner { fill: none; stroke: rgba(143, 240, 255, 0.5); stroke-width: 1.2; stroke-dasharray: 4 5; }
+.shield-div { fill: none; stroke: rgba(143, 240, 255, 0.4); stroke-width: 1.2; }
+.shield-seal { fill: rgba(11, 42, 85, 0.5); stroke: var(--holo-gold); stroke-width: 2; }
+
+/* Scan lines and sheen sweeping across the shield */
+.holo-scan {
+  clip-path: path('M150 8 C190 8 250 4 290 8 L290 170 C290 255 228 303 150 332 C72 303 10 255 10 170 L10 8 C50 4 110 8 150 8 Z');
+  background:
+    linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.28) 45%, rgba(180, 140, 255, 0.18) 52%, transparent 65%) 0 0 / 300% 100%,
+    repeating-linear-gradient(0deg, rgba(143, 240, 255, 0.08) 0 1px, transparent 1px 4px);
+  mix-blend-mode: screen;
+}
+
+/* Symbols, positioned like the quadrants of the real crest */
+.holo-sym { width: 108px; height: 108px; inset: auto; transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.4s; }
+.holo-sym svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 0 4px rgba(143, 240, 255, 0.85)); }
+.sym-atom { left: 36px; top: 40px; }
+.sym-book { right: 36px; top: 38px; }
+.sym-coast { left: 34px; top: 170px; }
+.sym-seed { right: 34px; top: 170px; }
+.holo-sym.focus { transform: translateZ(calc(var(--z) * 1px + 60px)) scale(1.15); filter: brightness(1.35); }
+.holo.has-focus .holo-sym:not(.focus) { filter: opacity(0.35); }
+
+/* Atom: real CSS 3D rings around a glowing nucleus */
+.atom { position: absolute; inset: 0; transform-style: preserve-3d; }
+.atom-core {
+  position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff, var(--holo-gold) 45%, #c26a2e);
+  box-shadow: 0 0 14px 4px rgba(245, 210, 122, 0.8);
+}
+.atom-ring {
+  position: absolute; left: 50%; top: 50%; width: 100px; height: 38px; margin: -19px 0 0 -50px; border-radius: 50%;
+  border: 2px solid var(--cyan); box-shadow: 0 0 8px rgba(143, 240, 255, 0.8), inset 0 0 6px rgba(143, 240, 255, 0.5);
+  transform-style: preserve-3d;
+}
+.atom-ring i {
+  position: absolute; top: 50%; left: -5px; width: 9px; height: 9px; margin-top: -4.5px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 10px 3px var(--cyan);
+}
+.r1 { transform: rotateZ(0deg) rotateX(20deg); }
+.r2 { transform: rotateZ(60deg) rotateX(20deg); border-color: var(--violet); }
+.r3 { transform: rotateZ(-60deg) rotateX(20deg); border-color: #ff7a7a; }
+
+/* Book and sun */
+.sun-rays line { stroke: var(--holo-gold); stroke-width: 2.4; stroke-linecap: round; stroke-dasharray: 0 22 14 100; }
+.sun { fill: rgba(245, 160, 80, 0.55); stroke: var(--holo-gold); stroke-width: 2; }
+.book { fill: rgba(143, 240, 255, 0.18); stroke: var(--cyan); stroke-width: 2; stroke-linejoin: round; }
+.book-lines { fill: none; stroke: rgba(143, 240, 255, 0.75); stroke-width: 1.2; }
+.sun-rays { transform-origin: 50px 50px; }
+
+/* Coast */
+.trunk { fill: none; stroke: var(--holo-gold); stroke-width: 3; stroke-linecap: round; }
+.frond { fill: none; stroke: #7dffb0; stroke-width: 2.2; stroke-linecap: round; }
+.palm { transform-box: fill-box; transform-origin: 50% 100%; }
+.waves path { fill: none; stroke: var(--cyan); stroke-width: 2.4; stroke-linecap: round; }
+.waves path + path { opacity: 0.6; }
+
+/* Seedling */
+.soil { fill: rgba(200, 140, 80, 0.35); stroke: var(--holo-gold); stroke-width: 1.8; }
+.stem { fill: none; stroke: #7dffb0; stroke-width: 3; stroke-linecap: round; }
+.leaf path { fill: rgba(125, 255, 176, 0.3); stroke: #7dffb0; stroke-width: 2; stroke-linejoin: round; }
+.leaf { transform-box: fill-box; }
+.leaf-l { transform-origin: 100% 100%; }
+.leaf-r { transform-origin: 0% 100%; }
+
+/* LSTU wordmark in the seal */
+.holo-mark { inset: auto; left: 0; right: 0; top: 252px; text-align: center; }
+.holo-mark span {
+  font: 700 26px/1 var(--serif); letter-spacing: 0.08em; color: #fff;
+  text-shadow: 0 0 8px var(--cyan), 0 0 18px rgba(143, 240, 255, 0.6);
+}
+
+/* Projector base under the hologram */
+.holo-base { position: absolute; left: 50%; bottom: 0; width: 220px; height: 60px; margin-left: -110px; pointer-events: none; }
+.holo-base .pad {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 30px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(143, 240, 255, 0.55), rgba(143, 240, 255, 0.08) 70%, transparent);
+  border: 1px solid rgba(143, 240, 255, 0.5);
+}
+.holo-base .beam {
+  position: absolute; left: 20px; right: 20px; bottom: 14px; height: 300px;
+  background: linear-gradient(to top, rgba(143, 240, 255, 0.22), transparent 85%);
+  clip-path: polygon(30% 100%, 70% 100%, 100% 0, 0 0);
+  filter: blur(2px);
+}
+
+/* Legend chips: focus a symbol */
+.holo-legend { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 10px 0 0; padding: 0; }
+.holo-legend button {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  background: rgba(143, 240, 255, 0.08); color: #e4f9ff; border: 1px solid rgba(143, 240, 255, 0.4);
+  border-radius: 999px; padding: 4px 12px; font: 600 13px var(--sans); letter-spacing: 0.02em;
+  transition: background 0.2s, border-color 0.2s;
+}
+.holo-legend button:hover, .holo-legend button.on { background: rgba(143, 240, 255, 0.22); border-color: var(--cyan); }
+.holo-legend .dot { width: 8px; height: 8px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
+.dot-atom { background: var(--cyan); color: var(--cyan); }
+.dot-book { background: var(--holo-gold); color: var(--holo-gold); }
+.dot-coast { background: #59c9ff; color: #59c9ff; }
+.dot-seed { background: #7dffb0; color: #7dffb0; }
+.holo-hint { margin: 8px 0 0; font-size: 13px; color: rgba(228, 249, 255, 0.7); letter-spacing: 0.04em; }
+.holo-hint span { display: inline-block; }
+
+/* ---------- Living animation (only when motion is allowed) ---------- */
+.motion .holo-rig { animation: holo-flicker 7s steps(1) infinite; }
+.motion .holo-scan { animation: holo-sheen 5s linear infinite; }
+.motion .atom { animation: atom-spin 9s linear infinite; }
+.motion .atom-ring i { offset-path: none; animation: electron 2.2s linear infinite; }
+.motion .r2 i { animation-duration: 2.9s; }
+.motion .r3 i { animation-duration: 3.6s; }
+.motion .sun-rays { animation: rays 22s linear infinite; }
+.motion .sun-rays line { animation: ray-pulse 2.6s ease-in-out infinite; }
+.motion .palm { animation: sway 4s ease-in-out infinite alternate; }
+.motion .palm.p2 { animation-delay: -1.5s; }
+.motion .waves path { animation: wave 3s linear infinite; }
+.motion .waves path + path { animation-duration: 4.5s; }
+.motion .leaf-l { animation: leaf-l 3.4s ease-in-out infinite alternate; }
+.motion .leaf-r { animation: leaf-r 3.8s ease-in-out infinite alternate; }
+.motion .holo-sym:not(.focus) { animation: hover-z 6s ease-in-out infinite; }
+.motion .sym-book:not(.focus) { animation-delay: -1.5s; }
+.motion .sym-coast:not(.focus) { animation-delay: -3s; }
+.motion .sym-seed:not(.focus) { animation-delay: -4.5s; }
+.motion .holo-base .beam { animation: beam 3s ease-in-out infinite; }
+.motion .holo-hint span { animation: hint-spin 3s ease-in-out infinite; }
+
+@keyframes holo-flicker { 0%, 100% { opacity: 1; } 41% { opacity: 0.86; } 42% { opacity: 1; } 77% { opacity: 0.92; } 78% { opacity: 1; } }
+@keyframes holo-sheen { from { background-position: 150% 0, 0 0; } to { background-position: -150% 0, 0 40px; } }
+@keyframes atom-spin { from { transform: rotateY(0deg) rotateX(10deg); } to { transform: rotateY(360deg) rotateX(10deg); } }
+@keyframes electron {
+  0% { left: -5px; top: 50%; } 25% { left: 46px; top: -4px; } 50% { left: 95px; top: 50%; }
+  75% { left: 46px; top: calc(100% - 5px); } 100% { left: -5px; top: 50%; }
+}
+@keyframes rays { to { transform: rotate(360deg); } }
+@keyframes ray-pulse { 50% { opacity: 0.45; } }
+@keyframes sway { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+@keyframes wave { to { transform: translateX(40px); } }
+@keyframes leaf-l { to { transform: rotate(-8deg); } }
+@keyframes leaf-r { to { transform: rotate(8deg); } }
+@keyframes hover-z { 50% { transform: translateZ(calc(var(--z) * 1px + 14px)); } }
+@keyframes beam { 50% { opacity: 0.6; } }
+@keyframes hint-spin { 50% { transform: rotate(-200deg); } }
+
+@media (max-width: 1000px) {
+  .holo { transform: scale(0.82); transform-origin: 50% 0; margin-bottom: -70px; }
+}
+@media (max-width: 760px) {
+  .holo { transform: scale(0.7); margin-bottom: -130px; }
+}
