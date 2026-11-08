@@ -160,7 +160,7 @@ h2.boxed::after { content: ''; position: absolute; left: 0; bottom: -2px; width:
 .quicklinks a:hover { background: var(--navy); color: #fff; }
 
 /* ---------- Inner pages ---------- */
-.page-header { background: linear-gradient(rgba(7, 29, 59, 0.92), rgba(11, 42, 85, 0.92)), repeating-linear-gradient(45deg, #163d73 0 2px, #0b2a55 2px 22px); color: #fff; padding: 40px 0 32px; border-bottom: 4px solid var(--gold); }
+.page-header { background: radial-gradient(ellipse at 80% 20%, rgba(58, 123, 213, 0.35), transparent 60%), linear-gradient(120deg, #071d3b, #163d73); color: #fff; padding: 40px 0 32px; border-bottom: 4px solid var(--gold); }
 .page-header h1 { color: #fff; font-size: 38px; margin-bottom: 8px; }
 .breadcrumb { font-size: 15px; display: flex; gap: 8px; flex-wrap: wrap; color: var(--gold-light); }
 .breadcrumb a { color: #d7deea; text-decoration: none; }

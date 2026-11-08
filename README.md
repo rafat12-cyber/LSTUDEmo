@@ -49,7 +49,11 @@ The chat button in the bottom-right corner opens the LSTU Assistant (`src/compon
 
 ## Motion and 3D
 
-- `src/components/HoloCrest.astro` + `src/scripts/holo.ts` + `src/styles/holo.css`: the holographic crest in the hero (drag, arrow keys, legend chips).
-- `src/scripts/bg3d.ts`: the live 3D constellation background on every page.
-- `src/scripts/motion.ts` + `src/styles/motion.css`: scroll reveals, card tilt, counters, progress bar.
-- All of it turns off for visitors who set "reduce motion" on their device.
+- `src/three/` holds the real 3D scenes, built with three.js, which only loads on pages that use it and only if the browser supports WebGL:
+  - `models.ts`: the crest (shield, four quadrants, LSTU, Bangla ribbon) and each symbol as a 3D model (atom, sun over an open book, palms and sea, seedling).
+  - `crest.ts`: the hero crest. Visitors can drag it, use the arrow keys or click a legend chip.
+  - `scenes.ts`: the coastal hero background (sea, sunset, palms, boats, birds, stars) and the section scenes (atom, book and sun, Meghna waves, seedling).
+  - `stage.ts`: renders each scene only while it's on screen and pauses when the tab is hidden.
+- `src/scripts/bg3d.ts`: soft drifting gold points behind every page.
+- `src/scripts/motion.ts` + `src/styles/motion.css`: scroll reveals, card tilt, counters and the progress bar.
+- Visitors who set "reduce motion" on their device get still frames. Without WebGL, the hero shows the logo image.

@@ -1,96 +1,27 @@
 ---
-// Interactive holographic version of the LSTU crest. Each symbol of the logo
-// (atom, sun over open book, palms by the Meghna, seedling) floats on its own
-// layer in 3D space inside the shield. Visitors drag (or use arrow keys) to turn it.
-// Behaviour lives in src/scripts/holo.ts, styles in src/styles/holo.css.
+// The LSTU crest in real 3D (three.js): shield with the four quadrants of the logo,
+// each symbol a 3D model (atom, sun over an open book, palms by the sea, seedling),
+// LSTU at the tip and the Bangla name on the ribbon. Drag, arrow keys or the chips turn it.
+// Code: src/three/crest.ts and src/three/models.ts. Falls back to the logo image without WebGL.
+import { site } from '../lib/site';
+import { url } from '../lib/url';
 const symbols = [
   { key: 'atom', label: 'Science', note: 'The atom: physics, chemistry and engineering' },
   { key: 'book', label: 'Knowledge', note: 'The sun rising over an open book: learning lights the way' },
-  { key: 'coast', label: 'The Meghna coast', note: 'Palms and waves: our home on the coastal belt' },
+  { key: 'coast', label: 'The Meghna coast', note: 'Palms and sea: our home on the coastal belt' },
   { key: 'seed', label: 'Agriculture', note: 'The seedling: farming, fisheries and growth' },
 ];
 ---
-<div class="holo" tabindex="0" role="img" aria-label="Interactive 3D hologram of the LSTU crest showing its four symbols: atom, sun over an open book, palm trees by the sea, and a seedling. Drag or use the arrow keys to turn it.">
+<div class="holo" data-bn={site.nameBn} tabindex="0" role="img" aria-label="Interactive 3D model of the LSTU crest: an atom, the sun rising over an open book, palm trees by the sea and a seedling, with LSTU and the university's Bangla name. Drag or use the arrow keys to turn it.">
   <div class="holo-stage">
-    <div class="holo-rig">
-      <div class="holo-layer holo-glow" style="--z:-40"></div>
-
-      <div class="holo-layer holo-shield" style="--z:0">
-        <svg viewBox="0 0 300 340" aria-hidden="true">
-          <defs>
-            <linearGradient id="holo-edge" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#8ff0ff" />
-              <stop offset="0.45" stop-color="#f5d27a" />
-              <stop offset="1" stop-color="#b48cff" />
-            </linearGradient>
-            <linearGradient id="holo-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#8ff0ff" stop-opacity="0.16" />
-              <stop offset="1" stop-color="#1a3b7a" stop-opacity="0.05" />
-            </linearGradient>
-          </defs>
-          <path class="shield-body" d="M150 8 C190 8 250 4 290 8 L290 170 C290 255 228 303 150 332 C72 303 10 255 10 170 L10 8 C50 4 110 8 150 8 Z" />
-          <path class="shield-inner" d="M150 22 C188 22 240 18 276 22 L276 168 C276 245 220 290 150 316 C80 290 24 245 24 168 L24 22 C60 18 112 22 150 22 Z" />
-          <path class="shield-div" d="M150 22 V316 M24 160 H276" />
-          <circle class="shield-seal" cx="150" cy="268" r="30" />
-        </svg>
-      </div>
-
-      <div class="holo-layer holo-sym sym-atom" style="--z:70" data-sym="atom">
-        <div class="atom">
-          <span class="atom-ring r1"><i></i></span>
-          <span class="atom-ring r2"><i></i></span>
-          <span class="atom-ring r3"><i></i></span>
-          <span class="atom-core"></span>
-        </div>
-      </div>
-
-      <div class="holo-layer holo-sym sym-book" style="--z:55" data-sym="book">
-        <svg viewBox="0 0 100 100" aria-hidden="true">
-          <g class="sun-rays">
-            {Array.from({ length: 12 }, (_, i) => <line x1="50" y1="50" x2="50" y2="14" transform={`rotate(${i * 30 - 90} 50 50)`} />)}
-          </g>
-          <circle class="sun" cx="50" cy="50" r="15" />
-          <path class="book" d="M8 66 Q29 56 50 66 Q71 56 92 66 L92 90 Q71 80 50 90 Q29 80 8 90 Z" />
-          <path class="book-lines" d="M50 66 V90 M16 70 Q30 64 44 70 M16 76 Q30 70 44 76 M56 70 Q70 64 84 70 M56 76 Q70 70 84 76" />
-        </svg>
-      </div>
-
-      <div class="holo-layer holo-sym sym-coast" style="--z:45" data-sym="coast">
-        <svg viewBox="0 0 100 100" aria-hidden="true">
-          <g class="palm p1">
-            <path class="trunk" d="M34 78 Q30 55 40 34" />
-            <path class="frond" d="M40 34 Q26 26 12 36 M40 34 Q31 18 18 16 M40 34 Q46 18 60 20 M40 34 Q55 30 62 42 M40 34 Q38 22 44 12" />
-          </g>
-          <g class="palm p2">
-            <path class="trunk" d="M66 78 Q66 62 72 48" />
-            <path class="frond" d="M72 48 Q62 42 54 48 M72 48 Q68 36 60 34 M72 48 Q78 36 88 38 M72 48 Q82 46 88 54" />
-          </g>
-          <g class="waves">
-            <path d="M-40 82 q10 -6 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" />
-            <path d="M-30 90 q10 -6 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" />
-          </g>
-        </svg>
-      </div>
-
-      <div class="holo-layer holo-sym sym-seed" style="--z:62" data-sym="seed">
-        <svg viewBox="0 0 100 100" aria-hidden="true">
-          <path class="soil" d="M8 88 Q50 70 92 88 Z" />
-          <path class="stem" d="M50 84 Q51 62 50 42" />
-          <g class="leaf leaf-l"><path d="M50 60 Q30 56 20 36 Q42 32 50 60 Z" /></g>
-          <g class="leaf leaf-r"><path d="M50 50 Q68 44 82 22 Q60 20 50 50 Z" /></g>
-        </svg>
-      </div>
-
-      <div class="holo-layer holo-mark" style="--z:85"><span>LSTU</span></div>
-      <div class="holo-layer holo-scan" style="--z:1"></div>
-    </div>
+    <img class="crest-fallback" src={url('/images/logo.png')} alt="" width="300" height="300" />
+    <canvas class="crest-canvas" aria-hidden="true"></canvas>
     <div class="holo-base" aria-hidden="true"><span class="beam"></span><span class="pad"></span></div>
   </div>
-
   <ul class="holo-legend" aria-label="Symbols of the crest">
     {symbols.map((s) => (
       <li><button type="button" data-focus={s.key} title={s.note}><span class={`dot dot-${s.key}`}></span>{s.label}</button></li>
     ))}
   </ul>
-  <p class="holo-hint" aria-hidden="true"><span>⟲</span> Drag to explore the crest</p>
+  <p class="holo-hint" aria-hidden="true"><span>⟲</span> Drag to turn the crest</p>
 </div>

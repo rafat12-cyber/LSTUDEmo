@@ -1,5 +1,4 @@
-// Live 3D background: a slowly turning constellation of gold points on a sphere,
-// joined by faint lines when they are near each other, like a network of knowledge.
+// Live 3D background: a slowly turning sphere of soft gold points (no lines).
 // It follows the mouse a little and scroll turns it. Drawn on one fixed <canvas>
 // behind the whole page. Pauses when the tab is hidden; a single still frame is
 // drawn when the visitor prefers reduced motion.
@@ -11,7 +10,6 @@ if (canvas && ctx) {
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const small = window.matchMedia('(max-width: 760px)').matches;
   const COUNT = small ? 70 : 140;
-  const LINK = small ? 0.42 : 0.34; // link distance on the unit sphere
 
   type P = { x: number; y: number; z: number; r: number; tw: number };
   const pts: P[] = [];
@@ -64,26 +62,7 @@ if (canvas && ctx) {
       proj[i] = { x: ox + x1 * R * s, y: oy + y1 * R * s, z: z2, s, p };
     }
 
-    // links
-    ctx.lineWidth = 1;
-    for (let i = 0; i < COUNT; i++) {
-      const a = pts[i];
-      for (let j = i + 1; j < COUNT; j++) {
-        const b = pts[j];
-        const dx = a.x - b.x, dy = a.y - b.y, dz = a.z - b.z;
-        const d = dx * dx + dy * dy + dz * dz;
-        if (d < LINK * LINK) {
-          const depth = (2 - (proj[i].z + proj[j].z) / 2) / 3; // nearer = stronger
-          const alpha = (1 - Math.sqrt(d) / LINK) * 0.22 * depth;
-          ctx.strokeStyle = `rgba(200, 150, 46, ${alpha.toFixed(3)})`;
-          ctx.beginPath();
-          ctx.moveTo(proj[i].x, proj[i].y);
-          ctx.lineTo(proj[j].x, proj[j].y);
-          ctx.stroke();
-        }
-      }
-    }
-    // points
+    // points (no connecting lines)
     for (let i = 0; i < COUNT; i++) {
       const q = proj[i];
       const near = (1 - q.z) / 2; // 0 far .. 1 near
