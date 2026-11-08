@@ -36,9 +36,8 @@ const quick = [
 ---
 <Base>
   <section class="hero" aria-label="Highlights">
-    <div class="hero-sparks" aria-hidden="true">
-      {Array.from({ length: 18 }, (_, i) => <span style={`--i:${i}`}></span>)}
-    </div>
+    <canvas class="coast-canvas" aria-hidden="true"></canvas>
+    <div class="hero-shade" aria-hidden="true"></div>
     <div class="container hero-grid">
       <div class="hero-slides">
         {slides.map((s, i) => (
@@ -71,7 +70,8 @@ const quick = [
     </div>
   </div>
 
-  <section class="section intro">
+  <section class="section intro has-3d">
+    <canvas class="sym3d sym-right" data-kind="atom" aria-hidden="true"></canvas>
     <div class="container">
       <div class="section-title left">
         <span class="eyebrow">Why LSTU</span>
@@ -111,7 +111,8 @@ const quick = [
     </div>
   </section>
 
-  <section class="section">
+  <section class="section has-3d">
+    <canvas class="sym3d sym-right sym-top" data-kind="book" aria-hidden="true"></canvas>
     <div class="container">
       <div class="section-title left">
         <span class="eyebrow">Academics</span>
@@ -132,7 +133,8 @@ const quick = [
     </div>
   </section>
 
-  <section class="stats">
+  <section class="stats has-3d">
+    <canvas class="sym3d sym-fill" data-kind="waves" aria-hidden="true"></canvas>
     <div class="container stats-grid">
       <div class="stat"><b data-count="2400" data-suffix="+">2,400+</b><span>Students</span></div>
       <div class="stat"><b data-count="120" data-suffix="+">120+</b><span>Teachers</span></div>
@@ -205,7 +207,8 @@ const quick = [
     </div>
   </section>
 
-  <section class="cta-band">
+  <section class="cta-band has-3d">
+    <canvas class="sym3d sym-right sym-cta" data-kind="seed" aria-hidden="true"></canvas>
     <div class="container cta-inner">
       <div>
         <span class="eyebrow light">Admission 2026-27</span>
@@ -234,6 +237,6 @@ const quick = [
     }
   </script>
   <script>
-    import '../scripts/holo.ts';
+    import '../three/boot.ts';
   </script>
 </Base>

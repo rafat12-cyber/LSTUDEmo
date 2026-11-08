@@ -27,11 +27,13 @@ body > *:not(.bg3d):not(.assistant):not(.scroll-progress):not(.to-top):not(.skip
     radial-gradient(ellipse at 75% 45%, rgba(58, 123, 213, 0.35), transparent 55%),
     linear-gradient(115deg, rgba(4, 16, 36, 0.96) 30%, rgba(11, 42, 85, 0.88));
 }
-.hero::after {
-  content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 24px);
+.coast-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hero-shade {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(4, 16, 36, 0.82) 0%, rgba(4, 16, 36, 0.55) 38%, rgba(4, 16, 36, 0.05) 70%),
+    linear-gradient(to top, rgba(4, 16, 36, 0.45), transparent 35%);
 }
-.hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 24px; align-items: center; padding-top: 40px; padding-bottom: 40px; }
+.hero-grid { position: relative; z-index: 2; display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 24px; align-items: center; padding-top: 40px; padding-bottom: 40px; }
 .hero-slides { position: relative; min-height: 380px; }
 .hero .slide { position: absolute; inset: 0; background: none !important; animation: none !important; }
 .slide-kicker { display: inline-flex; align-items: center; gap: 10px; }
@@ -41,22 +43,6 @@ body > *:not(.bg3d):not(.assistant):not(.scroll-progress):not(.to-top):not(.skip
 .hero .dots { position: absolute; left: 0; right: auto; bottom: -34px; justify-content: flex-start; }
 .hero-holo { display: flex; justify-content: center; }
 
-/* gold sparks rising through the hero */
-.hero-sparks { position: absolute; inset: 0; overflow: hidden; pointer-events: none; display: none; z-index: 0; }
-.hero-sparks span {
-  position: absolute; bottom: -10px; width: 4px; height: 4px; border-radius: 50%; background: var(--gold-light);
-  left: calc(var(--i) * 5.6% + 2%); opacity: 0; box-shadow: 0 0 8px 2px rgba(229, 194, 122, 0.6);
-  animation: spark calc(9s + var(--i) * 0.37s) linear calc(var(--i) * -0.83s) infinite;
-}
-.hero-sparks span:nth-child(3n) { width: 3px; height: 3px; }
-.hero-sparks span:nth-child(4n) { width: 6px; height: 6px; }
-.motion .hero-sparks { display: block; }
-@keyframes spark {
-  0% { transform: translate3d(0, 0, 0); opacity: 0; }
-  10% { opacity: 0.8; }
-  80% { opacity: 0.5; }
-  100% { transform: translate3d(30px, -720px, 0); opacity: 0; }
-}
 
 /* ---------- Section headings: editorial, left aligned ---------- */
 .section { padding: 88px 0; }
@@ -163,4 +149,22 @@ img.avatar { object-fit: cover; object-position: 50% 15%; display: block; }
   .vc-figure { float: none; width: 200px; margin: 0 0 16px; }
   .feature { grid-template-rows: 160px auto; }
   .cta-band { padding: 56px 0; }
+}
+
+/* ---------- 3D symbol scenes inside sections ---------- */
+.has-3d { position: relative; overflow: hidden; }
+.has-3d > .container { position: relative; z-index: 1; }
+.sym3d { position: absolute; pointer-events: none; z-index: 0; display: none; }
+html.webgl .sym3d { display: block; }
+.sym-right { right: max(0px, calc((100vw - 1180px) / 2 - 20px)); top: 30px; width: 380px; height: 340px; }
+.sym-top { top: 0; width: 330px; height: 250px; }
+.sym-cta { top: 50%; width: 300px; height: 300px; margin-top: -150px; right: max(0px, calc((100vw - 1180px) / 2 + 300px)); opacity: 0.95; }
+.sym-fill { inset: 0; width: 100%; height: 100%; opacity: 0.7; }
+.stats.has-3d .stats-grid { text-shadow: 0 2px 10px rgba(4, 16, 36, 0.8); }
+@media (max-width: 1000px) {
+  .sym-right { width: 300px; height: 300px; opacity: 0.35; }
+  .sym-cta { display: none !important; }
+}
+@media (max-width: 760px) {
+  .sym-right { width: 220px; height: 220px; top: 10px; right: -40px; opacity: 0.25; }
 }

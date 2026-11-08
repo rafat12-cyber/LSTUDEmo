@@ -36,7 +36,6 @@ html:not(.motion) .scroll-progress { display: none; }
 @keyframes pattern-drift { to { background-position: 0 0, 100% 60%; } }
 
 /* ---------- Inner page header: title rises in, pattern drifts ---------- */
-.motion .page-header { background-size: 100% 100%, 160% 160%; animation: pattern-drift 18s ease-in-out infinite alternate; }
 .motion .page-header h1, .motion .page-header .breadcrumb { animation: rise-in 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 .motion .page-header .breadcrumb { animation-delay: 0.15s; }
 @keyframes rise-in { from { opacity: 0; transform: perspective(700px) translateY(22px) rotateX(-20deg); } }
@@ -84,12 +83,6 @@ html:not(.motion) .scroll-progress { display: none; }
 
 /* ---------- Stats: counter pop ---------- */
 .motion .stats { position: relative; overflow: hidden; }
-.motion .stats::before {
-  content: ''; position: absolute; inset: -50%;
-  background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 26px);
-  animation: stats-slide 30s linear infinite;
-}
-@keyframes stats-slide { to { transform: translateX(26%); } }
 .motion .stat b { font-variant-numeric: tabular-nums; }
 .motion .stat.counted b { animation: pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1); }
 @keyframes pop { 50% { transform: scale(1.12); } }
