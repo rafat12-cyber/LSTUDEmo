@@ -50,7 +50,26 @@ const quick = [
         </div>
       </div>
     ))}
-    <img class="slide-crest" src={url('/images/logo.png')} alt="" width="300" height="300" />
+    <div class="hero-sparks" aria-hidden="true">
+      {Array.from({ length: 18 }, (_, i) => <span style={`--i:${i}`}></span>)}
+    </div>
+    <div class="crest-scene" aria-hidden="true">
+      <div class="crest-orbit orbit-1"><span></span></div>
+      <div class="crest-orbit orbit-2"><span></span></div>
+      <div class="crest-orbit orbit-3"><span></span></div>
+      <div class="crest-coin">
+        <div class="coin-face coin-front"><img src={url('/images/logo.png')} alt="" width="260" height="260" /></div>
+        <div class="coin-face coin-back">
+          <span class="coin-mark">LSTU</span>
+          <span class="coin-bn" lang="bn">লবিপ্রবি</span>
+          <span class="coin-motto">Knowledge · Science · Progress</span>
+        </div>
+      </div>
+      <span class="float-icon fi-1">📖</span>
+      <span class="float-icon fi-2">⚛</span>
+      <span class="float-icon fi-3">🎓</span>
+      <span class="float-icon fi-4">🔬</span>
+    </div>
     <div class="dots">
       {slides.map((_, i) => <button class={i === 0 ? 'active' : ''} aria-label={`Show slide ${i + 1}`} data-i={i}></button>)}
     </div>
@@ -127,10 +146,10 @@ const quick = [
 
   <section class="stats">
     <div class="container stats-grid">
-      <div class="stat"><b>2,400+</b><span>Students</span></div>
-      <div class="stat"><b>120+</b><span>Teachers</span></div>
-      <div class="stat"><b>{departments.length}</b><span>Departments</span></div>
-      <div class="stat"><b>4</b><span>Faculties</span></div>
+      <div class="stat"><b data-count="2400" data-suffix="+">2,400+</b><span>Students</span></div>
+      <div class="stat"><b data-count="120" data-suffix="+">120+</b><span>Teachers</span></div>
+      <div class="stat"><b data-count={departments.length}>{departments.length}</b><span>Departments</span></div>
+      <div class="stat"><b data-count="4">4</b><span>Faculties</span></div>
     </div>
   </section>
 
