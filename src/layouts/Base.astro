@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import '../styles/motion.css';
 import { site, nav } from '../lib/site';
 import { url } from '../lib/url';
 
@@ -20,6 +21,15 @@ const year = new Date().getFullYear();
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <title>{fullTitle}</title>
+    <script is:inline>
+      // Turn on the motion layer before first paint (no flash of content that then hides).
+      // If the motion script never loads, fall back to the static page after 2.5s.
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+        var r = document.documentElement;
+        r.classList.add('motion');
+        setTimeout(function () { if (!r.classList.contains('motion-ready')) r.classList.remove('motion'); }, 2500);
+      }
+    </script>
     <link rel="icon" type="image/png" href={url('/favicon.png')} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -121,6 +131,7 @@ const year = new Date().getFullYear();
     </footer>
 
     <script>
+      import '../scripts/motion.ts';
       const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
       const menu = document.getElementById('menu');
       toggle?.addEventListener('click', () => {

@@ -1,0 +1,207 @@
+/*
+ * Motion layer: 3D hero crest, scroll reveals, card tilt, counters, progress bar.
+ * Everything here is opt-in through the `motion` class that Base.astro adds to <html> in <head>
+ * only when the visitor has NOT asked for reduced motion. Without it the site renders exactly
+ * as the static classic design, so nothing is hidden if JavaScript fails.
+ */
+
+/* ---------- Scroll progress bar ---------- */
+.scroll-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 200;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  transform-origin: 0 50%; transform: scaleX(var(--progress, 0));
+  pointer-events: none;
+}
+html:not(.motion) .scroll-progress { display: none; }
+
+/* ---------- Masthead crest: gentle 3D turn on hover ---------- */
+.motion .brand { perspective: 600px; }
+.motion .brand img { transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); transform-style: preserve-3d; }
+.motion .brand:hover img { transform: rotateY(360deg); }
+
+/* ---------- Hero: 3D crest coin ---------- */
+.crest-scene {
+  position: absolute; right: 6%; top: 50%; width: 320px; height: 320px; margin-top: -160px;
+  perspective: 1100px; transform-style: preserve-3d; pointer-events: none;
+}
+.crest-coin {
+  position: absolute; inset: 20px; transform-style: preserve-3d;
+  transform: rotateX(calc(var(--my, 0) * -14deg)) rotateY(calc(var(--mx, 0) * 22deg));
+  transition: transform 0.4s ease-out;
+}
+.coin-face { position: absolute; inset: 0; border-radius: 50%; backface-visibility: hidden; }
+.coin-front {
+  background: #fff; border: 6px solid var(--gold); padding: 20px; transform: translateZ(1px); overflow: hidden;
+  box-shadow: inset 0 0 0 3px var(--gold-light), 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+.coin-front img { width: 100%; height: 100%; display: block; border-radius: 50%; }
+.coin-back {
+  transform: rotateY(180deg) translateZ(1px);
+  background: radial-gradient(circle at 35% 30%, #f1d695, var(--gold) 55%, #8f6a1f);
+  border: 6px solid #a57c26; color: var(--navy-dark);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  box-shadow: inset 0 0 0 10px rgba(255, 255, 255, 0.18), inset 0 0 40px rgba(0, 0, 0, 0.35);
+}
+.coin-mark { font: 700 64px/1 var(--serif); letter-spacing: 0.06em; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5); }
+.coin-bn { font-size: 26px; font-weight: 600; margin-top: 6px; }
+.coin-motto { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; margin-top: 12px; max-width: 70%; }
+
+/* Orbiting rings around the crest, like an atom: science and technology */
+.crest-orbit {
+  position: absolute; inset: -6px; border-radius: 50%; border: 1.5px solid rgba(229, 194, 122, 0.45);
+  transform-style: preserve-3d;
+}
+.crest-orbit span {
+  position: absolute; top: 50%; left: -6px; width: 11px; height: 11px; margin-top: -5.5px; border-radius: 50%;
+  background: var(--gold-light); box-shadow: 0 0 12px 3px rgba(229, 194, 122, 0.8);
+}
+.orbit-1 { --tilt: rotateX(72deg) rotateY(0deg); }
+.orbit-2 { --tilt: rotateX(72deg) rotateY(60deg); inset: -22px; }
+.orbit-3 { --tilt: rotateX(72deg) rotateY(-60deg); inset: -38px; border-color: rgba(229, 194, 122, 0.25); }
+.crest-orbit { transform: var(--tilt); }
+
+.float-icon {
+  position: absolute; font-size: 30px; opacity: 0.9; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.4));
+  transform: translate3d(calc(var(--mx, 0) * var(--depth) * 1px), calc(var(--my, 0) * var(--depth) * 1px), 0);
+  transition: transform 0.4s ease-out;
+}
+.fi-1 { top: -18px; left: -30px; --depth: 26; }
+.fi-2 { top: 30px; right: -50px; --depth: -20; }
+.fi-3 { bottom: -12px; left: -48px; --depth: 18; }
+.fi-4 { bottom: 10px; right: -30px; --depth: -28; }
+
+/* Gold "sparks" drifting up through the hero */
+.hero-sparks { position: absolute; inset: 0; overflow: hidden; pointer-events: none; display: none; }
+.hero-sparks span {
+  position: absolute; bottom: -10px; width: 4px; height: 4px; border-radius: 50%; background: var(--gold-light);
+  left: calc(var(--i) * 5.6% + 2%); opacity: 0;
+  box-shadow: 0 0 8px 2px rgba(229, 194, 122, 0.6);
+  animation: spark calc(9s + var(--i) * 0.37s) linear calc(var(--i) * -0.83s) infinite;
+}
+.hero-sparks span:nth-child(3n) { width: 3px; height: 3px; }
+.hero-sparks span:nth-child(4n) { width: 6px; height: 6px; }
+@keyframes spark {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  10% { opacity: 0.8; }
+  80% { opacity: 0.5; }
+  100% { transform: translate3d(30px, -470px, 0); opacity: 0; }
+}
+
+.motion .hero-sparks { display: block; }
+.motion .crest-coin { animation: coin-spin 18s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.motion .crest-scene { animation: crest-bob 6s ease-in-out infinite; }
+/* Each ring spins inside its own tilted plane, so the glowing dot circles the crest like an electron */
+.motion .crest-orbit { animation: orbit 8s linear infinite; }
+.motion .orbit-2 { animation-duration: 11s; animation-direction: reverse; }
+.motion .orbit-3 { animation-duration: 15s; }
+.motion .float-icon { animation: float-y 5s ease-in-out infinite; }
+.motion .fi-2 { animation-delay: -1.2s; }
+.motion .fi-3 { animation-delay: -2.4s; }
+.motion .fi-4 { animation-delay: -3.6s; }
+
+/* Coin rests showing the crest, turns to show the gold back, then returns */
+@keyframes coin-spin {
+  0%, 30% { rotate: y 0deg; }
+  50%, 70% { rotate: y 180deg; }
+  90%, 100% { rotate: y 360deg; }
+}
+@keyframes crest-bob { 50% { translate: 0 -12px; } }
+@keyframes orbit {
+  from { transform: var(--tilt) rotateZ(0deg); }
+  to { transform: var(--tilt) rotateZ(360deg); }
+}
+@keyframes float-y { 50% { translate: 0 -14px; } }
+
+/* Hero slide text: staggered 3D entrance whenever a slide becomes active */
+.motion .slide-content > * {
+  opacity: 0; transform: perspective(700px) translate3d(0, 26px, 0) rotateX(-18deg);
+  transform-origin: 50% 100%;
+  transition: opacity 0.7s ease, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.motion .slide.active .slide-content > * { opacity: 1; transform: none; }
+.motion .slide.active .slide-content > :nth-child(1) { transition-delay: 0.15s; }
+.motion .slide.active .slide-content > :nth-child(2) { transition-delay: 0.3s; }
+.motion .slide.active .slide-content > :nth-child(3) { transition-delay: 0.45s; }
+.motion .slide.active .slide-content > :nth-child(4) { transition-delay: 0.6s; }
+.motion .slide.active .slide-content > :nth-child(5) { transition-delay: 0.7s; }
+/* Slow "Ken Burns" drift of the patterned slide background */
+.motion .slide { background-size: 100% 100%, 140% 140%; }
+.motion .slide.active { animation: pattern-drift 14s ease-in-out infinite alternate; }
+@keyframes pattern-drift { to { background-position: 0 0, 100% 60%; } }
+
+/* ---------- Inner page header: title rises in, pattern drifts ---------- */
+.motion .page-header { background-size: 100% 100%, 160% 160%; animation: pattern-drift 18s ease-in-out infinite alternate; }
+.motion .page-header h1, .motion .page-header .breadcrumb { animation: rise-in 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.motion .page-header .breadcrumb { animation-delay: 0.15s; }
+@keyframes rise-in { from { opacity: 0; transform: perspective(700px) translateY(22px) rotateX(-20deg); } }
+
+/* ---------- Scroll reveal ----------
+ * Keep this selector list in sync with REVEAL in src/scripts/motion.ts.
+ * Hidden state is keyed on .motion (set in <head>) so nothing flashes before the script runs. */
+.motion :is(.section-title, .card, .board, .quicklinks a, .welcome .portrait, .welcome > div, .content, .sidebar .widget, .person, .table-wrap, .stat) {
+  transition: opacity 0.8s ease, transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1), border-color 0.2s, box-shadow 0.3s;
+  transition-delay: var(--d, 0s);
+}
+.motion :is(.section-title, .card, .board, .quicklinks a, .welcome .portrait, .welcome > div, .content, .sidebar .widget, .person, .table-wrap, .stat):not(.in) { opacity: 0; transform: translate3d(0, 36px, 0); }
+/* Small items flip up in 3D; tall blocks (articles, tables, boards) only rise, so they never distort */
+.motion :is(.card, .quicklinks a, .person, .stat, .welcome .portrait):not(.in):not(.in) { transform: perspective(900px) translate3d(0, 46px, -40px) rotateX(16deg); }
+.motion .section-title.section-title:not(.in) { transform: translate3d(0, 24px, 0) scale(0.97); }
+.motion .section-title .rule { transition: width 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s; }
+.motion .section-title:not(.in) .rule { width: 0; }
+
+/* ---------- 3D tilt on cards ---------- */
+.motion .tilt {
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0);
+  transform-style: preserve-3d; position: relative; will-change: transform;
+}
+.motion .tilt.tilting { transition: transform 0.12s ease-out, border-color 0.2s, box-shadow 0.3s; transition-delay: 0s; }
+.motion .tilt.tilting { box-shadow: 0 18px 36px rgba(11, 42, 85, 0.22); }
+.motion .card.tilt:hover { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-4px); }
+.motion .card.tilt .card-icon, .motion .card.tilt h3 { transform: translateZ(30px); transition: transform 0.3s; }
+.motion .quicklinks a.tilt span { transform: translateZ(26px); transition: transform 0.3s; }
+/* Moving light glare */
+.motion .tilt::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.3s;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(255, 255, 255, 0.55), transparent 55%);
+  mix-blend-mode: soft-light;
+}
+.motion .tilt.tilting::after { opacity: 1; }
+.motion .card .card-icon { display: inline-block; }
+.motion .card:hover .card-icon { animation: icon-flip 0.9s cubic-bezier(0.2, 0.8, 0.2, 1); }
+@keyframes icon-flip { from { rotate: y 0deg; } to { rotate: y 360deg; } }
+
+/* Notice board rows slide in sideways a little */
+.motion .board li { transition: background 0.2s, transform 0.2s; }
+.motion .board li:hover { background: var(--ivory); transform: translateX(4px); }
+.motion .datebox { transition: transform 0.5s; }
+.motion .board li:hover .datebox { transform: perspective(300px) rotateY(-20deg); }
+
+/* ---------- Stats: counter pop ---------- */
+.motion .stats { position: relative; overflow: hidden; }
+.motion .stats::before {
+  content: ''; position: absolute; inset: -50%;
+  background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 26px);
+  animation: stats-slide 30s linear infinite;
+}
+@keyframes stats-slide { to { transform: translateX(26%); } }
+.motion .stat b { font-variant-numeric: tabular-nums; }
+.motion .stat.counted b { animation: pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes pop { 50% { transform: scale(1.12); } }
+
+/* ---------- Back to top ---------- */
+.to-top {
+  position: fixed; right: 18px; bottom: 18px; z-index: 60; width: 46px; height: 46px; border-radius: 50%;
+  border: 2px solid var(--gold); background: var(--navy); color: var(--gold-light); font-size: 20px; cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); opacity: 0; transform: translateY(16px); pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s, background 0.2s;
+}
+.to-top.show { opacity: 1; transform: none; pointer-events: auto; }
+.to-top:hover { background: var(--gold); color: #fff; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .to-top { transition: none; }
+}
+@media (max-width: 1000px) {
+  .crest-scene { display: none; }
+}
