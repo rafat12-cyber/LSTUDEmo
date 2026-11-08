@@ -7,6 +7,11 @@ export const site = {
   phone: '+880 0000-000000',
   email: 'info@lstu.edu.bd',
   registrarEmail: 'registrar@lstu.edu.bd',
+  vc: {
+    name: 'Professor Dr. Muhammad Hanif (Murad)',
+    title: 'Vice-Chancellor',
+    photo: '/images/vc.jpg',
+  },
 };
 
 export const faculties = [

@@ -1,0 +1,40 @@
+---
+// Floating "Ask LSTU" assistant. Behaviour: src/scripts/assistant.ts. Styles: src/styles/assistant.css.
+// Set PUBLIC_ASSISTANT_API at build time to send questions to a real AI backend (see README).
+import { url } from '../lib/url';
+const api = import.meta.env.PUBLIC_ASSISTANT_API ?? '';
+const suggestions = ['How do I apply for admission?', 'When is the final exam?', 'Which departments are there?', 'How can I contact the registrar?', 'Who is the Vice-Chancellor?'];
+---
+<div class="assistant" data-api={api} data-index={url('/assistant-index.json')}>
+  <button class="assistant-fab" type="button" aria-expanded="false" aria-controls="assistant-panel">
+    <span class="fab-orb" aria-hidden="true"></span>
+    <span class="fab-label">Ask LSTU</span>
+  </button>
+
+  <section id="assistant-panel" class="assistant-panel" role="dialog" aria-modal="false" aria-labelledby="assistant-title" hidden>
+    <header class="assistant-head">
+      <span class="head-orb" aria-hidden="true"></span>
+      <div>
+        <h2 id="assistant-title">LSTU Assistant</h2>
+        <p class="assistant-status">{api ? 'Online · AI powered' : 'Demo mode · answers from this website'}</p>
+      </div>
+      <button class="assistant-close" type="button" aria-label="Close assistant">✕</button>
+    </header>
+
+    <div class="assistant-log" role="log" aria-live="polite">
+      <div class="msg bot">
+        <p>Hello! 👋 I'm the LSTU virtual assistant. I can help you find admission information, notices, departments, exam dates and contacts. What are you looking for?</p>
+      </div>
+    </div>
+
+    <div class="assistant-chips">
+      {suggestions.map((s) => <button type="button" class="chip">{s}</button>)}
+    </div>
+
+    <form class="assistant-form">
+      <label for="assistant-input" class="sr-only">Type your question</label>
+      <input id="assistant-input" name="q" type="text" autocomplete="off" placeholder="Ask about admission, exams, departments…" maxlength="500" />
+      <button type="submit" aria-label="Send">➤</button>
+    </form>
+  </section>
+</div>

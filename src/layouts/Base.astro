@@ -1,8 +1,12 @@
 ---
 import '../styles/global.css';
 import '../styles/motion.css';
+import '../styles/refresh.css';
+import '../styles/holo.css';
+import '../styles/assistant.css';
 import { site, nav } from '../lib/site';
 import { url } from '../lib/url';
+import Assistant from '../components/Assistant.astro';
 
 interface Props {
   title?: string;
@@ -39,6 +43,7 @@ const year = new Date().getFullYear();
     />
   </head>
   <body>
+    <canvas class="bg3d" aria-hidden="true"></canvas>
     <a class="skip" href="#main">Skip to content</a>
 
     <div class="topbar">
@@ -130,8 +135,12 @@ const year = new Date().getFullYear();
       </div>
     </footer>
 
+    <Assistant />
+
     <script>
       import '../scripts/motion.ts';
+      import '../scripts/bg3d.ts';
+      import '../scripts/assistant.ts';
       const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
       const menu = document.getElementById('menu');
       toggle?.addEventListener('click', () => {

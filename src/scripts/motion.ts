@@ -37,7 +37,7 @@ function initScroll() {
 }
 
 // Elements that rise into view as you scroll, and which of them tilt under the pointer.
-const REVEAL = '.section-title, .card, .board, .quicklinks a, .welcome .portrait, .welcome > div, .content, .sidebar .widget, .person, .table-wrap, .stat';
+const REVEAL = '.section-title, .card, .board, .quicklinks a, .welcome .portrait, .welcome > div, .content, .sidebar .widget, .person, .table-wrap, .stat, .pillar, .feature, .cta-inner > *';
 const TILT = '.card, .quicklinks a, .person, .welcome .portrait';
 
 function initReveal() {
