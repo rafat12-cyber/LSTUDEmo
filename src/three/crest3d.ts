@@ -399,16 +399,16 @@ export function createCrest3D(bnName: string) {
   crest.userData.setGlow = (v: number) => { glowTarget = v; };
   crest.userData.setFocus = (k: string) => { focus = k; };
   const applyGlow = () => {
-    rimMat.emissiveIntensity = 0.55 * glow;
-    barMat.emissiveIntensity = 0.55 * glow;
-    (neon.material as THREE.LineBasicMaterial).opacity = 0.85 * glow;
-    (halo.material as THREE.MeshBasicMaterial).opacity = 0.9 * glow;
-    backMats.forEach((m, i) => { m.emissive.set(quads[i].bg); m.emissiveIntensity = 0.08 + 0.22 * glow; });
+    rimMat.emissiveIntensity = 0.28 * glow;
+    barMat.emissiveIntensity = 0.28 * glow;
+    (neon.material as THREE.LineBasicMaterial).opacity = 0.7 * glow;
+    (halo.material as THREE.MeshBasicMaterial).opacity = 0.4 * glow;
+    backMats.forEach((m, i) => { m.emissive.set(quads[i].bg); m.emissiveIntensity = 0.06 + 0.12 * glow; });
     quads.forEach((q) => {
       const f = !focus ? 1 : q.key === focus ? 2.6 : 0.45;
-      (q.group.userData.lamp as THREE.PointLight).intensity = (0.9 + 2.2 * glow) * f;
+      (q.group.userData.lamp as THREE.PointLight).intensity = (0.8 + 1.0 * glow) * f;
     });
-    frameFront.emissive.set(0x1b3f7a); frameFront.emissiveIntensity = 0.05 + 0.25 * glow;
+    frameFront.emissive.set(0x1b3f7a); frameFront.emissiveIntensity = 0.05 + 0.12 * glow;
   };
 
   crest.userData.tick = (t: number, dt = 0.016) => {
