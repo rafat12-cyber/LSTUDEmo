@@ -727,7 +727,7 @@ export function mountHero(canvas: HTMLCanvasElement, holo: HTMLElement | null, b
   };
 
   /* ---------------- interaction ---------------- */
-  let rx = -0.05, ry = -0.3, vx = 0, vy = 0; // crest rotation
+  let rx = 0, ry = 0, vx = 0, vy = 0; // crest rotation: 0, 0 faces the visitor
   let hoverX = 0, hoverY = 0, hoverTX = 0, hoverTY = 0; // hover tilt
   let mode: '' | 'crest' | 'beam' = '';
   let lastX = 0, lastY = 0, lastInput = -100, lastBeamMove = -100, clock = 0;
@@ -832,18 +832,18 @@ export function mountHero(canvas: HTMLCanvasElement, holo: HTMLElement | null, b
     camera.lookAt(lookAt);
     camera.updateMatrixWorld();
 
-    // crest: user rotation + inertia + idle sway + hover tilt, always facing the camera
+    // crest: it only moves when the visitor turns it (drag, hover, keys, chips);
+    // otherwise it settles back to face the front and stays still
     if (mode !== 'crest') {
       ry = clamp(ry + vy, LIM_Y); rx = clamp(rx + vx, LIM_X);
-      vy *= 0.92; vx *= 0.92;
-      if (t - lastInput > 2.5 && !reduceMotion) {
-        ry += (Math.sin(t * 0.35) * 0.4 - ry) * 0.015;
-        rx += (Math.sin(t * 0.25) * 0.07 - 0.04 - rx) * 0.015;
+      vy *= 0.9; vx *= 0.9;
+      if (t - lastInput > 1.2) {
+        const k = Math.min(1, (dt || 0.016) * 2.5);
+        ry -= ry * k; rx -= rx * k;
       }
     }
     hoverX += (hoverTX - hoverX) * 0.08; hoverY += (hoverTY - hoverY) * 0.08;
     placeCrest();
-    crest.position.addScaledVector(camera.up, Math.sin(t * 0.9) * 0.05 * crest.scale.x);
     userQ.setFromEuler(e3.set(rx - hoverY * 0.08, ry + hoverX * 0.12, 0));
     crest.quaternion.copy(camera.quaternion).multiply(userQ);
     crest.userData.updateClipping();
