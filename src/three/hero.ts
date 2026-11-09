@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { Water } from 'three/examples/jsm/objects/Water.js';
 import { createStage, reduceMotion } from './stage';
 import { createCrest3D } from './crest3d';
-import { createPalm } from './models';
+import { createCoconutPalm, createPlumTree, createBush, createNowka } from './riverside';
 
 /* ------------------------------------------------------------------ */
 /* Procedural textures                                                 */
@@ -32,7 +32,7 @@ function waterNormals() {
     for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
       const dx = height(x + 1, y) - height(x - 1, y);
       const dy = height(x, y + 1) - height(x, y - 1);
-      const n = new THREE.Vector3(-dx * 0.6, -dy * 0.6, 1).normalize();
+      const n = new THREE.Vector3(-dx * 0.22, -dy * 0.22, 1).normalize();
       const i = (y * N + x) * 4;
       img.data[i] = (n.x * 0.5 + 0.5) * 255; img.data[i + 1] = (n.y * 0.5 + 0.5) * 255; img.data[i + 2] = (n.z * 0.5 + 0.5) * 255; img.data[i + 3] = 255;
     }
@@ -224,6 +224,111 @@ function createShip() {
   ship.add(flag);
   const flagBase = Float32Array.from((flagGeo.attributes.position as THREE.BufferAttribute).array as Float32Array);
 
+  // ---- extra ship detail
+  // brass-rimmed portholes with warm light behind them
+  const brass = mat(0xc9a24a, { metalness: 0.8, roughness: 0.3 });
+  const glass = new THREE.MeshStandardMaterial({ color: 0xffe2a8, emissive: 0xffb860, emissiveIntensity: 1.2 });
+  for (let i = 0; i < 6; i++) {
+    [1, -1].forEach((sd) => {
+      const x = -3.1 + i * 0.85;
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.03, 8, 18), brass);
+      ring.position.set(x, 0.86, sd * 1.36);
+      ship.add(ring);
+      const pane = new THREE.Mesh(new THREE.CircleGeometry(0.11, 16), glass);
+      pane.position.set(x, 0.86, sd * 1.365);
+      if (sd < 0) pane.rotation.y = Math.PI;
+      ship.add(pane);
+    });
+  }
+  // the ship's name on both sides of the stern
+  const nameTex = canvasTex(512, 96, (g) => {
+    g.fillStyle = '#f4f1ea'; g.font = '700 54px Georgia, serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText('MV MEGHNA · LSTU', 256, 50);
+  });
+  [1, -1].forEach((sd) => {
+    const plate = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 0.45), new THREE.MeshStandardMaterial({ map: nameTex, transparent: true, roughness: 0.6 }));
+    plate.position.set(-2.0, 1.02, sd * 1.375);
+    if (sd < 0) plate.rotation.y = Math.PI;
+    ship.add(plate);
+  });
+  // rubber tyre fenders hanging over the side
+  const rubber = mat(0x151515, { roughness: 0.9 });
+  [-0.7, 0.5, 1.6].forEach((x) => [1, -1].forEach((sd) => {
+    const tyre = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.08, 8, 16), rubber);
+    tyre.position.set(x, 0.62, sd * 1.43);
+    ship.add(tyre);
+  }));
+  // anchor at the bow
+  const anchor = new THREE.Group();
+  const ironMat = mat(0x2a2d33, { metalness: 0.7, roughness: 0.4 });
+  const shank = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.6, 8), ironMat);
+  anchor.add(shank);
+  const arms = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.04, 6, 16, Math.PI), ironMat);
+  arms.rotation.z = Math.PI; arms.position.y = -0.12;
+  anchor.add(arms);
+  const stock = new THREE.Mesh(new THREE.TorusGeometry(0.07, 0.025, 6, 12), ironMat);
+  stock.position.y = 0.34;
+  anchor.add(stock);
+  [1, -1].forEach((sd) => { const a = anchor.clone(); a.position.set(3.55, 1.0, sd * 0.72); a.rotation.y = sd > 0 ? -0.35 : Math.PI + 0.35; ship.add(a); });
+  // cargo on the foredeck: crates, a coiled rope and a fishing net
+  const crateMat = mat(0x8a6236, { roughness: 0.85 });
+  ([[0.95, 0.35, 0.4, 0.5], [1.35, -0.45, 0.35, 0.4], [1.0, -0.5, 0.3, 0.3]] as const).forEach(([x, z, s1, s2]) => {
+    const c = new THREE.Mesh(new THREE.BoxGeometry(s1, s2, s1), crateMat);
+    c.position.set(x, 1.23 + s2 / 2, z);
+    c.rotation.y = x;
+    ship.add(c);
+  });
+  const coilMat = mat(0xc8b080, { roughness: 0.9 });
+  for (let i = 0; i < 4; i++) {
+    const coil = new THREE.Mesh(new THREE.TorusGeometry(0.28 - i * 0.04, 0.035, 6, 20), coilMat);
+    coil.rotation.x = Math.PI / 2; coil.position.set(-3.3, 1.27 + i * 0.05, 0.45);
+    ship.add(coil);
+  }
+  const net = new THREE.Mesh(new THREE.SphereGeometry(0.45, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x3f7a6a, wireframe: true }));
+  net.scale.y = 0.45; net.position.set(-3.2, 1.23, -0.5);
+  ship.add(net);
+  // a cabin door and a ladder to the roof
+  const door = new THREE.Mesh(new THREE.PlaneGeometry(0.55, 1.1), mat(0x173a6e));
+  door.position.set(-2.62, 1.8, 0); door.rotation.y = -Math.PI / 2;
+  ship.add(door);
+  for (let i = 0; i < 5; i++) {
+    const rung = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.4, 6), railMat);
+    rung.rotation.x = Math.PI / 2; rung.position.set(-2.66, 1.4 + i * 0.3, 0.75);
+    ship.add(rung);
+  }
+  // radar and antennas on the wheelhouse roof
+  const radarMast = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.5, 8), mastMat);
+  radarMast.position.set(-0.9, 3.2, 0);
+  ship.add(radarMast);
+  const radar = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.08, 0.9), mat(0xf4f1ea));
+  radar.position.set(-0.9, 3.47, 0);
+  ship.add(radar);
+  const whipMat = new THREE.LineBasicMaterial({ color: 0xc0c6d0 });
+  [[-1.8, 0.7], [-1.9, -0.7]].forEach(([x, z]) => {
+    ship.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x, 3.0, z), new THREE.Vector3(x - 0.15, 4.3, z)]), whipMat));
+  });
+  // navigation lights: red to port, green to starboard
+  ([[0xff3030, 1], [0x30ff70, -1]] as const).forEach(([c, sd]) => {
+    const l = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 6), new THREE.MeshBasicMaterial({ color: c }));
+    l.position.set(-0.25, 2.95, sd * 1.05);
+    ship.add(l);
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(c === 0xff3030 ? 'rgba(255,60,60,0.8)' : 'rgba(60,255,120,0.8)'), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+    halo.scale.setScalar(0.6); halo.position.copy(l.position);
+    ship.add(halo);
+  });
+  // a small orange dinghy on the stern deck
+  const dinghy = new THREE.Mesh(new THREE.SphereGeometry(0.5, 14, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), mat(0xff7a2a, { side: THREE.DoubleSide }));
+  dinghy.scale.set(1.6, 0.6, 0.8); dinghy.position.set(-3.1, 1.6, 0);
+  ship.add(dinghy);
+  // smoke drifting from the funnel
+  const smokeTex = glowTexture('rgba(160,170,190,0.5)');
+  const puffs = Array.from({ length: 6 }, (_, i) => {
+    const p = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeTex, transparent: true, depthWrite: false, opacity: 0 }));
+    p.userData.phase = i / 6;
+    ship.add(p);
+    return p;
+  });
+
   // sailor on the bow
   const sailor = createSailor();
   sailor.position.set(2.75, 1.23, 0);
@@ -231,6 +336,13 @@ function createShip() {
 
   ship.userData.sailor = sailor;
   ship.userData.tick = (t: number) => {
+    radar.rotation.y = t * 1.6;
+    puffs.forEach((p) => {
+      const k = (t * 0.18 + p.userData.phase) % 1;
+      p.position.set(-2.3 - k * 2.2, 4.0 + k * 2.2, k * 0.4);
+      p.scale.setScalar(0.5 + k * 1.6);
+      (p.material as THREE.SpriteMaterial).opacity = 0.35 * Math.sin(Math.PI * k);
+    });
     const fp = flagGeo.attributes.position as THREE.BufferAttribute;
     for (let i = 0; i < fp.count; i++) {
       const x = flagBase[i * 3];
@@ -351,7 +463,7 @@ export function mountHero(canvas: HTMLCanvasElement, holo: HTMLElement | null, b
   const stage = createStage(canvas, { fov: 45, alpha: false, maxDpr: small ? 1.25 : 1.5 });
   const { scene, camera, renderer } = stage;
   renderer.localClippingEnabled = true;
-  renderer.toneMappingExposure = 1.15;
+  renderer.toneMappingExposure = 0.95;
   camera.far = 2000;
   camera.updateProjectionMatrix();
   scene.fog = new THREE.Fog(0x16233f, 90, 420);
@@ -373,7 +485,7 @@ export function mountHero(canvas: HTMLCanvasElement, holo: HTMLElement | null, b
           vec3 col = mix(horizon, mid, smoothstep(0.0, 0.2, h));
           col = mix(col, top, smoothstep(0.2, 0.75, h));
           float m = max(dot(normalize(vDir), moonDir), 0.0);
-          col += vec3(0.55,0.62,0.8) * pow(m, 60.0) * 0.6 + vec3(0.25,0.3,0.45) * pow(m, 6.0) * 0.35;
+          col += vec3(0.55,0.62,0.8) * pow(m, 60.0) * 0.3 + vec3(0.25,0.3,0.45) * pow(m, 6.0) * 0.18;
           if (h < 0.0) col = horizon * 0.6;
           gl_FragColor = vec4(col, 1.0);
         }`,
@@ -405,19 +517,23 @@ export function mountHero(canvas: HTMLCanvasElement, holo: HTMLElement | null, b
   const moonPos = moonDir.clone().multiplyScalar(420);
   const moon = new THREE.Mesh(
     new THREE.SphereGeometry(17, 48, 32),
-    new THREE.MeshStandardMaterial({ map: moonTexture(), emissiveMap: moonTexture(), emissive: 0xffffff, emissiveIntensity: 0.85, roughness: 1, fog: false }),
+    new THREE.MeshStandardMaterial({ map: moonTexture(), emissiveMap: moonTexture(), emissive: 0xffffff, emissiveIntensity: 0.42, roughness: 1, fog: false }),
   );
   moon.position.copy(moonPos);
   moon.rotation.y = -Math.PI / 2 - 0.2;
   scene.add(moon);
-  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture('rgba(190,210,255,0.55)'), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, fog: false }));
-  halo.scale.setScalar(120);
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture('rgba(170,190,240,0.28)'), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, fog: false }));
+  halo.scale.setScalar(85);
   halo.position.copy(moonPos).multiplyScalar(0.99);
   scene.add(halo);
-  const moonLight = new THREE.DirectionalLight(0xc9d6ff, 1.6);
+  const moonLight = new THREE.DirectionalLight(0xc9d6ff, 1.3);
   moonLight.position.copy(moonDir).multiplyScalar(100);
   scene.add(moonLight);
-  scene.add(new THREE.HemisphereLight(0x5d74b3, 0x0a0f1e, 0.9));
+  scene.add(new THREE.HemisphereLight(0x5d74b3, 0x0a0f1e, 0.75));
+  // soft fill from the viewer's side, so the trees, boats and ship facing us are not just silhouettes
+  const fill = new THREE.DirectionalLight(0x8fa6d8, 0.55);
+  fill.position.set(30, 40, 80);
+  scene.add(fill);
 
   // ---- clouds lit by the moon
   const cloudTex = cloudTexture();
@@ -434,13 +550,19 @@ export function mountHero(canvas: HTMLCanvasElement, holo: HTMLElement | null, b
     textureWidth: small ? 256 : 512, textureHeight: small ? 256 : 512,
     waterNormals: waterNormals(),
     sunDirection: moonDir.clone(),
-    sunColor: 0xb8c6e8,
+    sunColor: 0x46506c,
     waterColor: 0x061a36,
-    distortionScale: 2.4,
+    distortionScale: 1.6,
     fog: true,
     alpha: 1,
   });
   water.rotation.x = -Math.PI / 2;
+  {
+    // a darker, clearer river: weaker mirror and no grey floor in the reflection
+    const wm = water.material as THREE.ShaderMaterial;
+    wm.fragmentShader = wm.fragmentShader.replace('vec3( 0.1 ) + reflectionSample * 0.9', 'vec3( 0.015 ) + reflectionSample * 0.62');
+    wm.needsUpdate = true;
+  }
   (water.material as THREE.ShaderMaterial).uniforms['size'].value = 2.2;
   scene.add(water);
 
@@ -487,31 +609,52 @@ export function mountHero(canvas: HTMLCanvasElement, holo: HTMLElement | null, b
   lighthouse.position.set(150, 0, -260);
   scene.add(lighthouse);
 
-  // ---- near shore on the left with palm silhouettes
-  const shore = new THREE.Mesh(new THREE.SphereGeometry(40, 20, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x141b2c, roughness: 1, flatShading: true }));
-  shore.scale.set(1.3, 0.12, 0.55);
-  shore.position.set(-78, -0.8, -70);
-  scene.add(shore);
+  // ---- river banks with coconut palms, boroi (Indian plum) trees and bushes
+  const bankMat = new THREE.MeshStandardMaterial({ color: 0x1f3320, roughness: 1, flatShading: true });
+  const sandMat = new THREE.MeshStandardMaterial({ color: 0x5a5040, roughness: 1 });
   const palms: THREE.Object3D[] = [];
-  ([[-52, -60, 13, 3], [-60, -74, 16, -2.5], [-68, -58, 11, 2.2], [-44, -78, 9, 1.4], [-74, -66, 14, -1]] as const).forEach(([x, z, h, lean]) => {
-    const p = createPalm(h, lean, true);
-    p.position.set(x, 2.5, z);
-    p.rotation.y = x * 0.2;
-    scene.add(p);
-    palms.push(p);
-  });
+  const makeBank = (cx: number, cz: number, rx: number, rz: number, trees: [string, number, number, number, number][]) => {
+    const sand = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 8, 0, Math.PI * 2, 0, Math.PI / 2), sandMat);
+    sand.scale.set(rx * 1.06, 1.6, rz * 1.08); sand.position.set(cx, -0.6, cz);
+    scene.add(sand);
+    const land = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 8, 0, Math.PI * 2, 0, Math.PI / 2), bankMat);
+    land.scale.set(rx, 2.6, rz); land.position.set(cx, -0.6, cz);
+    scene.add(land);
+    trees.forEach(([kind, x, z, h, lean]) => {
+      const tr = kind === 'palm' ? createCoconutPalm(h, lean) : kind === 'plum' ? createPlumTree(h) : createBush(h);
+      tr.position.set(cx + x, 1.6, cz + z);
+      tr.rotation.y = x * 0.37 + z;
+      scene.add(tr);
+      if (kind === 'palm') palms.push(tr);
+    });
+  };
+  // the near bank on the left
+  makeBank(-62, -62, 34, 22, [
+    ['palm', 10, 6, 13, 2.6], ['palm', 3, -4, 16, -1.8], ['palm', 16, -8, 11, 3.2], ['palm', -6, 8, 14, 1.2], ['palm', 22, 4, 9, 2.2],
+    ['plum', -2, 2, 8, 0], ['plum', 12, -14, 7, 0], ['plum', -14, -6, 9, 0],
+    ['bush', 20, 12, 1.6, 0], ['bush', 6, 14, 1.4, 0], ['bush', 26, -4, 1.3, 0], ['bush', -10, 14, 1.8, 0],
+  ]);
+  // the far bank on the right, past the crest
+  makeBank(112, -150, 40, 18, [
+    ['palm', -18, 4, 15, -2], ['palm', -6, -2, 18, 1.5], ['palm', 8, 6, 14, -1], ['palm', 20, -4, 16, 2],
+    ['plum', -26, -6, 10, 0], ['plum', 0, 8, 9, 0], ['plum', 26, 6, 11, 0],
+    ['bush', -12, 10, 2.2, 0], ['bush', 14, 12, 2, 0],
+  ]);
 
-  // ---- distant fishing boats with lanterns
-  const smallBoats = ([[-30, -150], [40, -190], [90, -140], [-110, -210]] as const).map(([x, z]) => {
-    const b = new THREE.Group();
-    const hull = new THREE.Mesh(new THREE.BoxGeometry(4, 0.8, 1.3), new THREE.MeshStandardMaterial({ color: 0x1a1410 }));
-    b.add(hull);
-    const l = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture('rgba(255,190,110,1)'), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, fog: false }));
-    l.scale.setScalar(3.2); l.position.y = 1.8;
-    b.add(l);
-    b.position.set(x, 0.3, z);
-    scene.add(b);
-    return b;
+  // ---- nowkas (country boats) out on the river, away from the ship
+  const nowkas = ([[6, -62, 0.5, true], [58, -78, -0.5, false], [-34, -110, 1.2, true], [30, -150, 2.6, false], [-4, -190, -0.2, true]] as const).map(([x, z, ry, sail], i) => {
+    const n = createNowka({ sail });
+    n.position.set(x, 0, z);
+    n.rotation.y = ry;
+    n.scale.setScalar(1.25);
+    scene.add(n);
+    if (n.userData.lampPos) {
+      const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture('rgba(255,190,110,0.9)'), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+      glow.scale.setScalar(2.4); glow.position.copy(n.userData.lampPos);
+      n.add(glow);
+    }
+    n.userData.phase = i * 1.7;
+    return n;
   });
 
   // ---- the ship, the sailor and the torch
@@ -521,12 +664,12 @@ export function mountHero(canvas: HTMLCanvasElement, holo: HTMLElement | null, b
   const { body, shoulder, tip } = sailor.userData as { body: THREE.Group; shoulder: THREE.Group; tip: THREE.Object3D };
   const beam = createBeam();
   scene.add(beam);
-  const spot = new THREE.SpotLight(0xd9f8ff, 260, 0, 0.11, 0.55, 1.1);
+  const spot = new THREE.SpotLight(0xd9f8ff, 95, 0, 0.11, 0.6, 1.1);
   scene.add(spot);
   const target = new THREE.Object3D();
   scene.add(target);
   spot.target = target;
-  const hitGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture('rgba(190,245,255,0.8)'), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+  const hitGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture('rgba(190,245,255,0.5)'), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
   scene.add(hitGlow);
 
   // ---- the crest
@@ -584,7 +727,7 @@ export function mountHero(canvas: HTMLCanvasElement, holo: HTMLElement | null, b
   };
 
   /* ---------------- interaction ---------------- */
-  let rx = -0.05, ry = -0.3, vx = 0, vy = 0; // crest rotation
+  let rx = 0, ry = 0, vx = 0, vy = 0; // crest rotation: 0, 0 faces the visitor
   let hoverX = 0, hoverY = 0, hoverTX = 0, hoverTY = 0; // hover tilt
   let mode: '' | 'crest' | 'beam' = '';
   let lastX = 0, lastY = 0, lastInput = -100, lastBeamMove = -100, clock = 0;
@@ -689,18 +832,18 @@ export function mountHero(canvas: HTMLCanvasElement, holo: HTMLElement | null, b
     camera.lookAt(lookAt);
     camera.updateMatrixWorld();
 
-    // crest: user rotation + inertia + idle sway + hover tilt, always facing the camera
+    // crest: it only moves when the visitor turns it (drag, hover, keys, chips);
+    // otherwise it settles back to face the front and stays still
     if (mode !== 'crest') {
       ry = clamp(ry + vy, LIM_Y); rx = clamp(rx + vx, LIM_X);
-      vy *= 0.92; vx *= 0.92;
-      if (t - lastInput > 2.5 && !reduceMotion) {
-        ry += (Math.sin(t * 0.35) * 0.4 - ry) * 0.015;
-        rx += (Math.sin(t * 0.25) * 0.07 - 0.04 - rx) * 0.015;
+      vy *= 0.9; vx *= 0.9;
+      if (t - lastInput > 1.2) {
+        const k = Math.min(1, (dt || 0.016) * 2.5);
+        ry -= ry * k; rx -= rx * k;
       }
     }
     hoverX += (hoverTX - hoverX) * 0.08; hoverY += (hoverTY - hoverY) * 0.08;
     placeCrest();
-    crest.position.addScaledVector(camera.up, Math.sin(t * 0.9) * 0.05 * crest.scale.x);
     userQ.setFromEuler(e3.set(rx - hoverY * 0.08, ry + hoverX * 0.12, 0));
     crest.quaternion.copy(camera.quaternion).multiply(userQ);
     crest.userData.updateClipping();
@@ -742,8 +885,8 @@ export function mountHero(canvas: HTMLCanvasElement, holo: HTMLElement | null, b
     crest.userData.setGlow(on);
     hitGlow.position.copy(aim);
     hitGlow.scale.setScalar(3.5 * crest.scale.x);
-    (hitGlow.material as THREE.SpriteMaterial).opacity = 0.25 + 0.5 * on;
-    (beam.material as THREE.ShaderMaterial).uniforms.uStrength.value = 0.85 + (beamHover ? 0.35 : 0) + (mode === 'beam' ? 0.35 : 0);
+    (hitGlow.material as THREE.SpriteMaterial).opacity = 0.06 + 0.14 * on;
+    (beam.material as THREE.ShaderMaterial).uniforms.uStrength.value = 0.5 + (beamHover ? 0.25 : 0) + (mode === 'beam' ? 0.25 : 0);
 
     // water, sky and details
     (water.material as THREE.ShaderMaterial).uniforms['time'].value += (dt || 0) * 0.45;
@@ -752,7 +895,7 @@ export function mountHero(canvas: HTMLCanvasElement, holo: HTMLElement | null, b
     clouds.forEach((c, i) => { c.position.x += 0.6 * dt * (1 + (i % 3) * 0.3); if (c.position.x > 420) c.position.x = -420; });
     sweep.rotation.y = t * 0.6;
     palms.forEach((p) => p.userData.tick?.(t));
-    smallBoats.forEach((b, i) => { b.position.y = 0.3 + Math.sin(t * 1.2 + i) * 0.25; b.rotation.z = Math.sin(t + i) * 0.05; });
+    nowkas.forEach((b) => { const ph = b.userData.phase; b.position.y = Math.sin(t * 1.1 + ph) * 0.18; b.rotation.z = Math.sin(t * 0.9 + ph) * 0.04; b.rotation.x = Math.sin(t * 0.7 + ph) * 0.02; });
     moon.rotation.y += dt * 0.004;
 
     // shooting star

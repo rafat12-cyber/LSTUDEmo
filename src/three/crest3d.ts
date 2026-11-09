@@ -3,7 +3,7 @@
 // Every scene is clipped to its window, so nothing ever crosses the border, and the layers
 // inside each window shift with the pointer to show their depth.
 import * as THREE from 'three';
-import { C, std, sx, sy, shieldShape, createAtom, createBookSun, createPalm, createRibbon, ribbonTexture } from './models';
+import { C, std, sx, sy, shieldShape, createAtom, createBookSun, createPalm } from './models';
 
 const D = 0.42; // depth of each window recess
 
@@ -349,21 +349,11 @@ export function createCrest3D(bnName: string) {
       (Array.isArray(m) ? m : [m]).forEach((mm) => { mm.clippingPlanes = q.worldPlanes; mm.clipShadows = true; });
     });
     // a soft light inside each window so the scenes read clearly
-    const lamp = new THREE.PointLight(0xfff1d6, 1.5, 1.6, 1.2);
+    const lamp = new THREE.PointLight(0xfff1d6, 3, 2.4, 1);
     lamp.position.set(q.center.x, q.center.y, 0.15);
     q.group.add(lamp);
     q.group.userData.lamp = lamp;
     crest.add(q.group);
-  });
-
-  // ---- ribbon with the Bangla name
-  const ribbon = createRibbon(bnName);
-  ribbon.position.set(0, -1.2, 0.16);
-  crest.add(ribbon);
-  // a little self-light keeps the Bangla name readable in the night scene
-  ribbon.traverse((o) => {
-    const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
-    if (m?.map) { m.emissive = new THREE.Color(0xffffff); m.emissiveMap = m.map; m.emissiveIntensity = 0.3; }
   });
 
   // ---- neon glow: an outline and a soft halo that brighten when the torch lights the crest
@@ -399,16 +389,16 @@ export function createCrest3D(bnName: string) {
   crest.userData.setGlow = (v: number) => { glowTarget = v; };
   crest.userData.setFocus = (k: string) => { focus = k; };
   const applyGlow = () => {
-    rimMat.emissiveIntensity = 0.55 * glow;
-    barMat.emissiveIntensity = 0.55 * glow;
-    (neon.material as THREE.LineBasicMaterial).opacity = 0.85 * glow;
-    (halo.material as THREE.MeshBasicMaterial).opacity = 0.9 * glow;
-    backMats.forEach((m, i) => { m.emissive.set(quads[i].bg); m.emissiveIntensity = 0.08 + 0.22 * glow; });
+    rimMat.emissiveIntensity = 0.28 * glow;
+    barMat.emissiveIntensity = 0.28 * glow;
+    (neon.material as THREE.LineBasicMaterial).opacity = 0.7 * glow;
+    (halo.material as THREE.MeshBasicMaterial).opacity = 0.4 * glow;
+    backMats.forEach((m, i) => { m.emissive.set(quads[i].bg); m.emissiveIntensity = 0.16 + 0.1 * glow; });
     quads.forEach((q) => {
-      const f = !focus ? 1 : q.key === focus ? 2.6 : 0.45;
-      (q.group.userData.lamp as THREE.PointLight).intensity = (0.9 + 2.2 * glow) * f;
+      const f = !focus ? 1 : q.key === focus ? 1.6 : 0.6;
+      (q.group.userData.lamp as THREE.PointLight).intensity = (2.6 + 0.9 * glow) * f;
     });
-    frameFront.emissive.set(0x1b3f7a); frameFront.emissiveIntensity = 0.05 + 0.25 * glow;
+    frameFront.emissive.set(0x1b3f7a); frameFront.emissiveIntensity = 0.05 + 0.12 * glow;
   };
 
   crest.userData.tick = (t: number, dt = 0.016) => {
@@ -427,11 +417,12 @@ export function createCrest3D(bnName: string) {
   crest.userData.symbols = Object.fromEntries(quads.map((q) => [q.key, q.group]));
   crest.userData.refreshTextures = () => {
     frameFront.map = frameTexture(); frameFront.needsUpdate = true;
-    const rm = ribbon.material as THREE.MeshStandardMaterial;
-    rm.map = ribbonTexture(bnName); rm.emissiveMap = rm.map; rm.needsUpdate = true;
   };
-  crest.userData.height = 2.62; // shield top to ribbon bottom, for fitting to the page
-  crest.userData.centerY = -0.12;
+  // the shield's own extent (there is no ribbon below it), for fitting it to the page
+  const ys = shieldShape(0).getPoints(48).map((p) => p.y);
+  const yMax = Math.max(...ys), yMin = Math.min(...ys);
+  crest.userData.height = (yMax - yMin) * 1.06;
+  crest.userData.centerY = (yMax + yMin) / 2;
   applyGlow();
   return crest;
 }
