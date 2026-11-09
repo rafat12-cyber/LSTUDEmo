@@ -1,31 +1,19 @@
 /* ---------- 3D crest (hero) ---------- */
 .holo {
   position: relative; width: 400px; max-width: 100%; display: flex; flex-direction: column; align-items: center;
-  outline: none; touch-action: pan-y; user-select: none; -webkit-user-select: none;
+  outline: none; user-select: none; -webkit-user-select: none;
 }
-html.webgl .holo { cursor: grab; }
-.holo.dragging { cursor: grabbing; }
+/* With WebGL the crest is drawn in the hero canvas behind this box, so pointer events pass through to it. */
+html.webgl .holo-stage { pointer-events: none; }
+.coast-canvas { touch-action: pan-y; }
+.coast-canvas.grabbing { cursor: grabbing !important; }
 .holo:focus-visible .holo-stage { outline: 2px dashed #8ff0ff; outline-offset: 6px; border-radius: 12px; }
 .holo-stage { position: relative; width: 400px; max-width: 100%; aspect-ratio: 400 / 440; }
-.crest-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; display: none; }
-html.webgl .crest-canvas { display: block; }
 .crest-fallback {
   position: absolute; left: 50%; top: 46%; width: 70%; transform: translate(-50%, -50%);
   filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.5));
 }
 html.webgl .holo.ready .crest-fallback { display: none; }
-
-/* soft projector light under the crest */
-.holo-base { position: absolute; left: 50%; bottom: 0; width: 240px; height: 60px; margin-left: -120px; pointer-events: none; }
-.holo-base .pad {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 30px; border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(255, 214, 140, 0.45), rgba(143, 240, 255, 0.08) 70%, transparent);
-}
-.holo-base .beam {
-  position: absolute; left: 30px; right: 30px; bottom: 14px; height: 320px;
-  background: linear-gradient(to top, rgba(255, 214, 140, 0.16), transparent 80%);
-  clip-path: polygon(30% 100%, 70% 100%, 100% 0, 0 0);
-}
 
 .holo-legend { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 6px 0 0; padding: 0; }
 .holo-legend button {

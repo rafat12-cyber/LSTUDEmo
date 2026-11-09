@@ -1,8 +1,7 @@
 ---
-// The LSTU crest in real 3D (three.js): shield with the four quadrants of the logo,
-// each symbol a 3D model (atom, sun over an open book, palms by the sea, seedling),
-// LSTU at the tip and the Bangla name on the ribbon. Drag, arrow keys or the chips turn it.
-// Code: src/three/crest.ts and src/three/models.ts. Falls back to the logo image without WebGL.
+// Placeholder for the 3D LSTU crest. The crest itself is drawn in the hero's 3D scene
+// (src/three/hero.ts and crest3d.ts), anchored to this box, lit by the sailor's torch.
+// Drag, arrow keys or the chips turn it. Without WebGL the logo image shows instead.
 import { site } from '../lib/site';
 import { url } from '../lib/url';
 const symbols = [
@@ -12,16 +11,14 @@ const symbols = [
   { key: 'seed', label: 'Agriculture', note: 'The seedling: farming, fisheries and growth' },
 ];
 ---
-<div class="holo" data-bn={site.nameBn} tabindex="0" role="img" aria-label="Interactive 3D model of the LSTU crest: an atom, the sun rising over an open book, palm trees by the sea and a seedling, with LSTU and the university's Bangla name. Drag or use the arrow keys to turn it.">
+<div class="holo" data-bn={site.nameBn} tabindex="0" role="img" aria-label="Interactive 3D model of the LSTU crest: an atom, the sun rising over an open book, palm trees by the sea and a seedling, with LSTU and the university's Bangla name. Drag or use the arrow keys to turn it. A sailor's torch lights it; drag the light to move it.">
   <div class="holo-stage">
     <img class="crest-fallback" src={url('/images/logo.png')} alt="" width="300" height="300" />
-    <canvas class="crest-canvas" aria-hidden="true"></canvas>
-    <div class="holo-base" aria-hidden="true"><span class="beam"></span><span class="pad"></span></div>
   </div>
   <ul class="holo-legend" aria-label="Symbols of the crest">
     {symbols.map((s) => (
       <li><button type="button" data-focus={s.key} title={s.note}><span class={`dot dot-${s.key}`}></span>{s.label}</button></li>
     ))}
   </ul>
-  <p class="holo-hint" aria-hidden="true"><span>⟲</span> Drag to turn the crest</p>
+  <p class="holo-hint" aria-hidden="true"><span>⟲</span> Drag the crest to turn it · drag the torch light to move it</p>
 </div>

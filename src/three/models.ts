@@ -1,5 +1,5 @@
 // 3D models of the LSTU crest and its symbols, built from three.js primitives.
-// Used by the hero crest, the coastal hero scene and the section scenes.
+// Used by the hero crest (crest3d.ts), the hero scene (hero.ts) and the section scenes.
 import * as THREE from 'three';
 
 export const C = {
@@ -23,15 +23,15 @@ export const C = {
   soil: 0x6b4426,
 };
 
-const std = (color: number, extra: THREE.MeshStandardMaterialParameters = {}) =>
+export const std = (color: number, extra: THREE.MeshStandardMaterialParameters = {}) =>
   new THREE.MeshStandardMaterial({ color, roughness: 0.55, metalness: 0.05, ...extra });
 
 /* ------------------------------------------------------------------ */
 /* Shield outline (logo proportions), in a 2 x ~2.27 unit box          */
 /* ------------------------------------------------------------------ */
 // Source coordinates are a 300 x 340 drawing; convert to centred units.
-const sx = (x: number) => (x - 150) / 150;
-const sy = (y: number) => (170 - y) / 150;
+export const sx = (x: number) => (x - 150) / 150;
+export const sy = (y: number) => (170 - y) / 150;
 
 export function shieldShape(inset = 0): THREE.Shape {
   const k = 1 - inset; // uniform shrink toward the centre for inner borders
@@ -52,47 +52,6 @@ export function shieldShape(inset = 0): THREE.Shape {
   s.bezierCurveTo(c7.x, c7.y, c8.x, c8.y, l1.x, l1.y);
   s.lineTo(a.x, a.y);
   return s;
-}
-
-/** Shield face texture: the four quadrants of the real crest, gold dividers, LSTU at the tip. */
-function shieldFaceTexture(): THREE.CanvasTexture {
-  const W = 600, H = 680; // 2x the 300 x 340 drawing
-  const cv = document.createElement('canvas');
-  cv.width = W; cv.height = H;
-  const g = cv.getContext('2d')!;
-  g.scale(2, 2);
-  const path = new Path2D('M10 16 C60 18 115 14 150 4 C185 14 240 18 290 16 L290 175 C290 258 230 306 150 334 C70 306 10 258 10 175 Z');
-  g.save();
-  g.clip(path);
-  const navy = '#0d2a5c', white = '#f7f5ef';
-  g.fillStyle = navy; g.fillRect(0, 0, 150, 160); // top-left: atom
-  g.fillStyle = white; g.fillRect(150, 0, 150, 160); // top-right: sun and book
-  g.fillStyle = white; g.fillRect(0, 160, 150, 92); // bottom-left: coast
-  g.fillStyle = navy; g.fillRect(150, 160, 150, 92); // bottom-right: seedling
-  g.fillStyle = navy; g.fillRect(0, 252, 300, 100); // tip: LSTU
-  // dividers
-  g.strokeStyle = '#d4a23a'; g.lineWidth = 4;
-  g.beginPath(); g.moveTo(150, 0); g.lineTo(150, 252); g.moveTo(0, 160); g.lineTo(300, 160); g.moveTo(0, 252); g.lineTo(300, 252); g.stroke();
-  // LSTU wordmark (no ring around it, as on the real crest)
-  g.fillStyle = '#f1cf7a';
-  g.font = '700 34px "Playfair Display", Georgia, serif';
-  g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillText('LSTU', 150, 282);
-  g.restore();
-  const tex = new THREE.CanvasTexture(cv);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
-  return tex;
-}
-
-/** Map a ShapeGeometry's raw x/y UVs onto 0..1 of the face texture. */
-function fitUVs(geo: THREE.BufferGeometry) {
-  const uv = geo.attributes.uv as THREE.BufferAttribute;
-  for (let i = 0; i < uv.count; i++) {
-    const x = uv.getX(i), y = uv.getY(i);
-    uv.setXY(i, (x * 150 + 150) / 300, 1 - (170 - y * 150) / 340);
-  }
-  uv.needsUpdate = true;
 }
 
 /* ------------------------------------------------------------------ */
@@ -136,66 +95,104 @@ export function createAtom(scale = 1) {
   return g;
 }
 
+/** Lined page texture for the open book. */
+function pageTexture() {
+  const cv = document.createElement('canvas');
+  cv.width = 256; cv.height = 128;
+  const g = cv.getContext('2d')!;
+  const grad = g.createLinearGradient(0, 0, 256, 0);
+  grad.addColorStop(0, '#efe6cf'); grad.addColorStop(0.12, '#fbf6e8'); grad.addColorStop(1, '#fffdf6');
+  g.fillStyle = grad; g.fillRect(0, 0, 256, 128);
+  g.strokeStyle = '#7d8aa6'; g.lineWidth = 5; g.lineCap = 'round';
+  for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(40, 34 + i * 22); g.lineTo(220, 34 + i * 22); g.stroke(); }
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+/**
+ * Sun rising over an open book, as on the crest: the book stands open facing the viewer
+ * (pages toward you, not lying flat), and the sun rises half-hidden from behind it.
+ */
 export function createBookSun(scale = 1) {
   const g = new THREE.Group();
-  // sun: half disc with depth, and rays as small cones
+  const W = 0.31, H = 0.24; // one page
+
+  // ---- sun: a thick disc behind the book; the book hides its lower half
   const sunGroup = new THREE.Group();
-  const sun = new THREE.Mesh(
-    new THREE.SphereGeometry(0.14, 32, 20),
-    std(C.sunRed, { emissive: C.sunOrange, emissiveIntensity: 0.35, roughness: 0.4 }),
+  const disc = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.15, 0.15, 0.05, 48),
+    std(C.sunRed, { emissive: 0xc0321c, emissiveIntensity: 0.55, roughness: 0.35 }),
   );
-  sun.scale.z = 0.55; // a rounded disc, rising behind the book
-  sunGroup.add(sun);
+  disc.rotation.x = Math.PI / 2; // flat face toward the viewer
+  sunGroup.add(disc);
+  const core = new THREE.Mesh(new THREE.CircleGeometry(0.1, 40), new THREE.MeshBasicMaterial({ color: 0xff8a3d }));
+  core.position.z = 0.026;
+  sunGroup.add(core);
   const rays = new THREE.Group();
-  for (let i = 0; i < 11; i++) {
-    const a = (i / 10) * Math.PI; // upper semicircle
-    const ray = new THREE.Mesh(new THREE.ConeGeometry(0.022, 0.11, 8), std(C.sunRed, { emissive: C.sunOrange, emissiveIntensity: 0.3 }));
-    ray.position.set(Math.cos(a) * 0.23, Math.sin(a) * 0.23, 0);
+  const rayGeo = new THREE.ConeGeometry(0.028, 0.12, 4);
+  const rayMat = std(C.sunRed, { emissive: 0xd8401f, emissiveIntensity: 0.5, roughness: 0.4, flatShading: true });
+  const N = 13;
+  for (let i = 0; i < N; i++) {
+    const a = (-12 + (i / (N - 1)) * 204) * (Math.PI / 180); // a little past the horizon on both sides
+    const ray = new THREE.Mesh(rayGeo, rayMat);
+    ray.position.set(Math.cos(a) * 0.24, Math.sin(a) * 0.24, 0);
     ray.rotation.z = a - Math.PI / 2;
     rays.add(ray);
   }
   sunGroup.add(rays);
-  sunGroup.position.y = 0.06;
+  sunGroup.position.set(0, H * 0.62, -0.09);
   g.add(sunGroup);
 
-  // open book: two bent page blocks + covers
+  // ---- open book standing up, facing the viewer, pages fanned in a soft V
   const book = new THREE.Group();
-  const pageShape = (dir: number) => {
-    const s = new THREE.Shape();
-    s.moveTo(0, 0);
-    s.quadraticCurveTo(dir * 0.14, 0.05, dir * 0.28, 0.02);
-    s.lineTo(dir * 0.28, -0.03);
-    s.quadraticCurveTo(dir * 0.14, 0.0, 0, -0.05);
-    s.closePath();
-    return s;
+  const pageTex = pageTexture();
+  const bend = (geo: THREE.BufferGeometry, dir: number) => {
+    const pos = geo.attributes.position as THREE.BufferAttribute;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i), y = pos.getY(i);
+      const u = Math.abs(x) / W; // 0 at spine, 1 at outer edge
+      pos.setZ(i, pos.getZ(i) - 0.07 * u + 0.025 * Math.sin(Math.PI * u)); // outer edges recede, pages curve
+      pos.setY(i, y + 0.03 * Math.sin(Math.PI * u) * (y > 0 ? 1 : 0.4)); // curved top edge like a real open book
+    }
+    pos.needsUpdate = true;
+    geo.computeVertexNormals();
+    if (dir < 0) geo.scale(1, 1, 1);
   };
   [-1, 1].forEach((dir) => {
-    const pages = new THREE.Mesh(new THREE.ExtrudeGeometry(pageShape(dir), { depth: 0.2, bevelEnabled: false }), std(C.page, { roughness: 0.8 }));
-    pages.position.z = -0.1;
-    book.add(pages);
-    const cover = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.02, 0.22), std(C.bookBlue));
-    cover.position.set(dir * 0.145, -0.06, 0);
-    cover.rotation.z = dir * 0.12;
-    book.add(cover);
+    const pageGeo = new THREE.PlaneGeometry(W, H, 16, 4);
+    pageGeo.translate((dir * W) / 2, 0, 0);
+    bend(pageGeo, dir);
+    const tex = pageTex.clone();
+    if (dir < 0) { tex.wrapS = THREE.RepeatWrapping; tex.repeat.x = -1; }
+    tex.needsUpdate = true;
+    const page = new THREE.Mesh(pageGeo, new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85, side: THREE.DoubleSide }));
+    book.add(page);
+    // page block thickness behind
+    const blockGeo = new THREE.BoxGeometry(W, H, 0.035, 16, 4, 1);
+    blockGeo.translate((dir * W) / 2, 0, -0.022);
+    bend(blockGeo, dir);
+    book.add(new THREE.Mesh(blockGeo, std(0xe8dcc0, { roughness: 0.9 })));
+    // cover, slightly larger
+    const coverGeo = new THREE.BoxGeometry(W + 0.025, H + 0.03, 0.018, 16, 4, 1);
+    coverGeo.translate((dir * (W + 0.025)) / 2, -0.004, -0.05);
+    bend(coverGeo, dir);
+    book.add(new THREE.Mesh(coverGeo, std(C.bookBlue, { roughness: 0.5 })));
   });
-  // page lines
-  const lineMat = std(0x7a8aa8);
-  for (let i = 0; i < 3; i++) {
-    [-1, 1].forEach((dir) => {
-      const l = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.006, 0.006), lineMat);
-      l.position.set(dir * 0.14, 0.035 - i * 0.022, 0.101);
-      book.add(l);
-    });
-  }
-  book.rotation.x = 0.35;
-  book.position.y = -0.14;
+  // spine
+  const spine = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, H + 0.03, 10), std(0x173f80));
+  spine.position.set(0, -0.004, -0.045);
+  book.add(spine);
+  book.rotation.x = -0.12; // top leans back slightly
+  book.position.y = -0.1;
   g.add(book);
+
   g.scale.setScalar(scale);
   g.userData.tick = (t: number) => {
-    rays.rotation.z = Math.sin(t * 0.8) * 0.06;
-    rays.children.forEach((r, i) => { r.scale.y = 1 + Math.sin(t * 3 + i) * 0.15; });
-    g.rotation.y = Math.sin(t * 0.5) * 0.35;
+    rays.children.forEach((r, i) => { r.scale.y = 1 + Math.sin(t * 2.4 + i * 0.7) * 0.18; });
+    sunGroup.position.y = H * 0.62 + Math.sin(t * 0.8) * 0.008;
   };
+  g.userData.sway = true;
   return g;
 }
 
@@ -264,40 +261,6 @@ export function createSea(w: number, d: number, segW: number, segD: number, colo
   return mesh;
 }
 
-export function createCoast(scale = 1) {
-  const g = new THREE.Group();
-  const sea = createSea(0.62, 0.36, 18, 10, C.sea, 0.012);
-  sea.position.set(0.04, -0.09, 0.0);
-  g.add(sea);
-  // sandy beach curving into the sea
-  const beachShape = new THREE.Shape();
-  beachShape.moveTo(-0.35, -0.1);
-  beachShape.quadraticCurveTo(-0.05, -0.02, 0.05, -0.2);
-  beachShape.lineTo(-0.35, -0.2);
-  beachShape.closePath();
-  const beach = new THREE.Mesh(new THREE.ExtrudeGeometry(beachShape, { depth: 0.36, bevelEnabled: false }), std(C.sand, { roughness: 0.95 }));
-  beach.rotation.x = -Math.PI / 2;
-  beach.position.set(0.02, -0.06, 0.16);
-  beach.scale.set(0.8, 0.8, 0.1);
-  g.add(beach);
-  // green land behind
-  const land = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2), std(0x3b8f45, { flatShading: true }));
-  land.scale.set(1.1, 0.35, 0.8);
-  land.position.set(-0.2, -0.11, -0.08);
-  g.add(land);
-  const palms = [createPalm(0.42, 0.1), createPalm(0.34, -0.08), createPalm(0.28, 0.12)];
-  palms[0].position.set(-0.22, -0.1, 0.0);
-  palms[1].position.set(-0.08, -0.1, -0.06);
-  palms[2].position.set(-0.3, -0.1, -0.1);
-  palms.forEach((p) => g.add(p));
-  g.scale.setScalar(scale);
-  g.userData.tick = (t: number) => {
-    (sea.userData.tick as (t: number) => void)(t);
-    palms.forEach((p) => (p.userData.tick as (t: number) => void)(t));
-  };
-  return g;
-}
-
 export function createSeedling(scale = 1) {
   const g = new THREE.Group();
   const soil = new THREE.Mesh(new THREE.SphereGeometry(0.28, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), std(C.soil, { roughness: 1, flatShading: true }));
@@ -340,7 +303,7 @@ export function createSeedling(scale = 1) {
 /* ------------------------------------------------------------------ */
 /* Ribbon with the Bangla name                                         */
 /* ------------------------------------------------------------------ */
-function ribbonTexture(text: string) {
+export function ribbonTexture(text: string) {
   const cv = document.createElement('canvas');
   cv.width = 1400; cv.height = 140;
   const g = cv.getContext('2d')!;
@@ -356,7 +319,7 @@ function ribbonTexture(text: string) {
   return tex;
 }
 
-function createRibbon(text: string) {
+export function createRibbon(text: string) {
   const W = 2.6, H = 0.26;
   const geo = new THREE.PlaneGeometry(W, H, 40, 1);
   const pos = geo.attributes.position as THREE.BufferAttribute;
@@ -370,65 +333,4 @@ function createRibbon(text: string) {
   const mat = new THREE.MeshStandardMaterial({ map: ribbonTexture(text), roughness: 0.6, side: THREE.DoubleSide });
   const ribbon = new THREE.Mesh(geo, mat);
   return ribbon;
-}
-
-/* ------------------------------------------------------------------ */
-/* The full crest                                                      */
-/* ------------------------------------------------------------------ */
-export function createCrest(bnName: string) {
-  const crest = new THREE.Group();
-  const depth = 0.16;
-
-  // gold rim (extruded outer shield)
-  const rim = new THREE.Mesh(
-    new THREE.ExtrudeGeometry(shieldShape(), { depth, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 3 }),
-    std(C.gold, { metalness: 0.75, roughness: 0.28 }),
-  );
-  rim.position.z = -depth;
-  crest.add(rim);
-  // navy outer border band and the painted face sit just in front of the rim
-  const band = new THREE.Mesh(new THREE.ShapeGeometry(shieldShape(0.0), 48), std(C.navy, { roughness: 0.5 }));
-  band.position.z = 0.032;
-  crest.add(band);
-  const faceGeo = new THREE.ShapeGeometry(shieldShape(0.07), 48);
-  fitUVs(faceGeo);
-  const face = new THREE.Mesh(faceGeo, new THREE.MeshStandardMaterial({ map: shieldFaceTexture(), roughness: 0.6, metalness: 0.0 }));
-  face.position.z = 0.036;
-  crest.add(face);
-  // thin gold inner border line
-  const innerLine = new THREE.Line(
-    new THREE.BufferGeometry().setFromPoints(shieldShape(0.07).getPoints(120).map((p) => new THREE.Vector3(p.x, p.y, 0.04))),
-    new THREE.LineBasicMaterial({ color: C.goldLight }),
-  );
-  crest.add(innerLine);
-
-  // symbols, each kept well inside its quadrant
-  const atom = createAtom(0.82);
-  atom.position.set(-0.42, 0.5, 0.2);
-  const bookSun = createBookSun(0.95);
-  bookSun.position.set(0.42, 0.5, 0.17);
-  const coast = createCoast(0.9);
-  coast.position.set(-0.4, -0.2, 0.14);
-  const seed = createSeedling(0.95);
-  seed.position.set(0.42, -0.22, 0.16);
-  // the bottom quadrants are short; tilt their scenes so depth reads from the front
-  coast.rotation.x = 0.45;
-  [atom, bookSun, coast, seed].forEach((s) => crest.add(s));
-
-  const ribbon = createRibbon(bnName);
-  ribbon.position.set(0, -1.18, 0.22);
-  crest.add(ribbon);
-
-  crest.userData.symbols = { atom, book: bookSun, coast, seed };
-  crest.userData.tick = (t: number) => {
-    [atom, bookSun, coast, seed].forEach((s) => (s.userData.tick as (t: number) => void)(t));
-  };
-  // re-render the painted textures once web fonts are ready
-  crest.userData.refreshTextures = () => {
-    (face.material as THREE.MeshStandardMaterial).map = shieldFaceTexture();
-    (ribbon.material as THREE.MeshStandardMaterial).map = ribbonTexture(bnName);
-    (face.material as THREE.MeshStandardMaterial).needsUpdate = true;
-    (ribbon.material as THREE.MeshStandardMaterial).needsUpdate = true;
-  };
-  return crest;
 }

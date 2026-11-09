@@ -51,8 +51,9 @@ The chat button in the bottom-right corner opens the LSTU Assistant (`src/compon
 
 - `src/three/` holds the real 3D scenes, built with three.js, which only loads on pages that use it and only if the browser supports WebGL:
   - `models.ts`: the crest (shield, four quadrants, LSTU, Bangla ribbon) and each symbol as a 3D model (atom, sun over an open book, palms and sea, seedling).
-  - `crest.ts`: the hero crest. Visitors can drag it, use the arrow keys or click a legend chip.
-  - `scenes.ts`: the coastal hero background (sea, sunset, palms, boats, birds, stars) and the section scenes (atom, book and sun, Meghna waves, seedling).
+  - `hero.ts`: the whole home page hero as one scene. A moonlit Meghna night with reflective water (three.js `Water`), a detailed moon, clouds, a lighthouse, village lights, distant boats and palms. A ship with a sailor whose torch lights the crest. Visitors drag the crest to turn it and drag the torch light to move it. When the light leaves the crest, it loses its neon glow. The crest is placed over the `.holo-stage` box in `HoloCrest.astro`, so the page layout decides where it sits.
+  - `crest3d.ts`: the 3D crest. Each logo symbol sits in its own recessed window, clipped so it never crosses the border, and shifts with the pointer for depth.
+  - `scenes.ts`: the section scenes (atom, book and sun, Meghna waves, seedling).
   - `stage.ts`: renders each scene only while it's on screen and pauses when the tab is hidden.
 - `src/scripts/bg3d.ts`: soft drifting gold points behind every page.
 - `src/scripts/motion.ts` + `src/styles/motion.css`: scroll reveals, card tilt, counters and the progress bar.

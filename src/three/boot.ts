@@ -17,9 +17,8 @@ const symbols = document.querySelectorAll<HTMLCanvasElement>('canvas.sym3d');
 if (webglAvailable() && (holo || coast || symbols.length)) {
   document.documentElement.classList.add('webgl');
   const start = async () => {
-    const [{ mountCrest }, { mountCoast, mountSymbol }] = await Promise.all([import('./crest'), import('./scenes')]);
-    if (coast) mountCoast(coast);
-    if (holo) mountCrest(holo, holo.dataset.bn || '');
+    const [{ mountHero }, { mountSymbol }] = await Promise.all([import('./hero'), import('./scenes')]);
+    if (coast) mountHero(coast, holo, holo?.dataset.bn || '');
     symbols.forEach((c) => mountSymbol(c, c.dataset.kind || 'atom'));
   };
   start().catch(() => document.documentElement.classList.remove('webgl'));
