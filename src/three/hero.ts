@@ -8,6 +8,8 @@ import { createStage, reduceMotion } from './stage';
 import { createCrest3D } from './crest3d';
 import { createCoconutPalm, createPlumTree, createBush, createNowka } from './riverside';
 
+const rand = (a: number, b: number) => a + Math.random() * (b - a);
+
 /* ------------------------------------------------------------------ */
 /* Procedural textures                                                 */
 /* ------------------------------------------------------------------ */
@@ -657,6 +659,48 @@ export function mountHero(canvas: HTMLCanvasElement, holo: HTMLElement | null, b
     return n;
   });
 
+  // ---- birds: two loose V flocks gliding across the sky, far above and away from the ship
+  const birdMat = new THREE.MeshStandardMaterial({ color: 0x080c18, roughness: 0.9, side: THREE.DoubleSide, fog: false });
+  const wingShape = new THREE.Shape();
+  wingShape.moveTo(0, 0); wingShape.quadraticCurveTo(0.6, 0.35, 1.3, 0.1); wingShape.lineTo(1.1, -0.05); wingShape.quadraticCurveTo(0.55, 0.02, 0, -0.25); wingShape.closePath();
+  const wingGeo = new THREE.ShapeGeometry(wingShape, 6);
+  wingGeo.rotateX(-Math.PI / 2); // lie flat, spanning +X, swept back along +Z
+  const makeBird = () => {
+    const b = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 6), birdMat);
+    body.scale.set(1, 0.8, 2.6);
+    b.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.09, 8, 6), birdMat);
+    head.position.set(0, 0.04, -0.38);
+    b.add(head);
+    const tail = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.35, 4), birdMat);
+    tail.rotation.x = Math.PI / 2; tail.position.z = 0.45; tail.scale.y = 0.3;
+    b.add(tail);
+    const wings = [1, -1].map((sd) => {
+      const w = new THREE.Mesh(wingGeo, birdMat);
+      w.scale.x = sd;
+      b.add(w);
+      return w;
+    });
+    b.userData.wings = wings;
+    return b;
+  };
+  const birds: THREE.Group[] = [];
+  ([[-40, 46, -150, 7], [-5, 64, -210, 5]] as const).forEach(([fx, fy, fz, n], fi) => {
+    for (let i = 0; i < n; i++) {
+      const b = makeBird();
+      const row = Math.ceil(i / 2), sd = i === 0 ? 0 : i % 2 ? 1 : -1;
+      b.userData.offset = new THREE.Vector3(-row * 9 + rand(-1, 1), rand(-1.5, 1.5) + row * 1.2, sd * row * 8);
+      b.userData.home = new THREE.Vector3(fx, fy, fz);
+      b.userData.speed = fi ? 3 : 4;
+      b.userData.phase = Math.random() * 6;
+      b.scale.setScalar(fi ? 3.4 : 3.8);
+      b.rotation.y = -Math.PI / 2; // head toward +X
+      scene.add(b);
+      birds.push(b);
+    }
+  });
+
   // ---- the ship, the sailor and the torch
   const ship = createShip();
   scene.add(ship);
@@ -897,6 +941,18 @@ export function mountHero(canvas: HTMLCanvasElement, holo: HTMLElement | null, b
     palms.forEach((p) => p.userData.tick?.(t));
     nowkas.forEach((b) => { const ph = b.userData.phase; b.position.y = Math.sin(t * 1.1 + ph) * 0.18; b.rotation.z = Math.sin(t * 0.9 + ph) * 0.04; b.rotation.x = Math.sin(t * 0.7 + ph) * 0.02; });
     moon.rotation.y += dt * 0.004;
+
+    // birds glide across and wrap around, flapping now and then
+    birds.forEach((b) => {
+      const u = b.userData;
+      u.home.x += u.speed * (dt || 0.016);
+      if (u.home.x > 200) u.home.x = -200;
+      b.position.copy(u.home).add(u.offset);
+      b.position.y += Math.sin(t * 0.6 + u.phase) * 1.2;
+      const flapping = Math.sin(t * 0.35 + u.phase) > -0.2; // short glides between flaps
+      const a = flapping ? Math.sin(t * 7 + u.phase) * 0.55 : 0.08;
+      u.wings[0].rotation.z = a; u.wings[1].rotation.z = -a;
+    });
 
     // shooting star
     shootT -= dt;
